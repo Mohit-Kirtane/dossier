@@ -23,7 +23,8 @@ RBAC-aware policy retrieval and invoice intelligence are next on the roadmap bel
 - **sqlglot** — parses and validates every LLM-generated query before it touches the database
 - **Google Gemini** — LLM inference via its OpenAI-compatible API (swappable for any OpenAI-compatible provider)
 - **PostgreSQL** (SQLite fallback for local dev) — document metadata, chat sessions/messages,
-  and a seeded demo dataset (departments/employees/products/orders) for database chat
+  and a seeded mini-ERP dataset (departments, employees, customers, products, contracts,
+  invoices, payments, support tickets) for database chat
 
 ## Architecture
 
@@ -64,6 +65,15 @@ a write ("delete...", "update...") is refused before any SQL is generated, and t
 summarizer is explicitly instructed never to claim data was changed (it only describes
 read-only results) — both guard against the model hallucinating that a mutation
 succeeded when it was actually blocked.
+
+The demo dataset is a small but interconnected B2B SaaS business: HR (departments,
+employees with a manager hierarchy), sales (customers, contracts), finance (invoices,
+payments — including realistic paid/overdue/pending states), and support (tickets with
+priority and resolution time). It's generated deterministically (fixed random seed,
+fixed reference "today") on first startup via `app/dbchat/seed.py`, so questions that
+span multiple tables — "which customers have overdue invoices," "which sales rep owns
+the most active contract value" — have real, sensible answers rather than a handful of
+toy rows.
 
 ## Running locally
 
