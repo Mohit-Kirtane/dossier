@@ -1,5 +1,21 @@
 @import "tailwindcss";
 
+@theme {
+  --color-ink: #12141c;
+  --color-ink-raised: #191c26;
+  --color-ink-soft: #9aa0b2;
+  --color-rule: #2b303c;
+  --color-paper: #f4efe3;
+  --color-paper-dim: #e7e0cd;
+  --color-ochre: #ce9a4a;
+  --color-ochre-deep: #9c6d28;
+
+  --font-display: "Fraunces", "Iowan Old Style", ui-serif, serif;
+  --font-body:
+    "IBM Plex Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Consolas, monospace;
+}
+
 html,
 body,
 #root {
@@ -8,10 +24,14 @@ body,
 }
 
 body {
-  font-family:
-    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  background-color: #0f1115;
-  color: #e6e9ef;
+  font-family: var(--font-body);
+  background-color: var(--color-ink);
+  color: var(--color-paper);
+}
+
+::selection {
+  background: var(--color-ochre);
+  color: var(--color-ink);
 }
 
 ::-webkit-scrollbar {
@@ -19,6 +39,32 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #262b36;
+  background: var(--color-rule);
   border-radius: 8px;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-ochre);
+  outline-offset: 2px;
+}
+
+@keyframes ledger-row-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.ledger-row {
+  animation: ledger-row-in 0.5s ease-out both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ledger-row {
+    animation: none;
+  }
 }

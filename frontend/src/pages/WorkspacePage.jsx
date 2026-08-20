@@ -1,13 +1,12 @@
 import { useCallback, useEffect, useState } from "react";
-import { Sidebar } from "./components/Sidebar";
-import { ChatPanel } from "./components/ChatPanel";
-import { listDocuments, sendChatMessage, uploadDocument } from "./lib/api";
-import type { DocumentOut, Message } from "./lib/types";
+import { Sidebar } from "../components/Sidebar.jsx";
+import { ChatPanel } from "../components/ChatPanel.jsx";
+import { listDocuments, sendChatMessage, uploadDocument } from "../lib/api.js";
 
-export default function App() {
-  const [documents, setDocuments] = useState<DocumentOut[]>([]);
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [sessionId, setSessionId] = useState<string | null>(null);
+export default function WorkspacePage() {
+  const [documents, setDocuments] = useState([]);
+  const [messages, setMessages] = useState([]);
+  const [sessionId, setSessionId] = useState(null);
   const [sending, setSending] = useState(false);
 
   const refreshDocuments = useCallback(async () => {
@@ -18,13 +17,13 @@ export default function App() {
     refreshDocuments().catch(() => undefined);
   }, [refreshDocuments]);
 
-  async function handleUpload(file: File) {
+  async function handleUpload(file) {
     await uploadDocument(file);
     await refreshDocuments();
   }
 
-  async function handleSend(question: string) {
-    const userMessage: Message = { id: crypto.randomUUID(), role: "user", content: question };
+  async function handleSend(question) {
+    const userMessage = { id: crypto.randomUUID(), role: "user", content: question };
     const pendingId = crypto.randomUUID();
     setMessages((prev) => [
       ...prev,
@@ -60,7 +59,7 @@ export default function App() {
   }
 
   return (
-    <div className="flex h-screen w-screen overflow-hidden">
+    <div className="flex h-screen w-screen overflow-hidden bg-ink">
       <Sidebar documents={documents} onUpload={handleUpload} />
       <ChatPanel messages={messages} onSend={handleSend} disabled={sending} />
     </div>
