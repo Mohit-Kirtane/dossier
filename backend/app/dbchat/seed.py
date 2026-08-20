@@ -248,16 +248,31 @@ def seed_demo_data(session: Session) -> None:
         return
 
     rng = random.Random(42)
-    customers = _build_customers(rng)
-    contracts, invoices, payments = _build_contracts_and_invoices(rng, customers)
-    tickets = _build_support_tickets(rng, customers)
 
+    # Committed in dependency order (parents before children) rather than one
+    # big add_all + commit at the end - SQLAlchemy's automatic flush ordering
+    # didn't reliably sequence these on Postgres (works fine on SQLite, where
+    # foreign keys are checked less strictly), causing FK violations on the
+    # customer/contract/invoice chain.
     session.add_all(DEPARTMENTS)
-    session.add_all(EMPLOYEES)
     session.add_all(PRODUCTS)
+    session.commit()
+
+    session.add_all(EMPLOYEES)
+    session.commit()
+
+    customers = _build_customers(rng)
     session.add_all(customers)
+    session.commit()
+
+    contracts, invoices, payments = _build_contracts_and_invoices(rng, customers)
     session.add_all(contracts)
+    session.commit()
+
     session.add_all(invoices)
+    session.commit()
+
+    tickets = _build_support_tickets(rng, customers)
     session.add_all(payments)
     session.add_all(tickets)
     session.commit()
