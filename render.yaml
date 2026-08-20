@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: enterprise-knowledge-copilot
+    name: dossier
     runtime: docker
     dockerfilePath: ./Dockerfile
     dockerContext: .
@@ -24,6 +24,18 @@ services:
         value: /app/data/policy_faiss_index
       - key: POLICY_UPLOAD_DIR
         value: /app/data/policy_uploads
+      - key: JWT_SECRET
+        generateValue: true
+      - key: COOKIE_SECURE
+        value: "true"
+      - key: ADMIN_EMAILS
+        sync: false
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: GOOGLE_CLIENT_SECRET
+        sync: false
+      - key: GOOGLE_REDIRECT_URI
+        sync: false
     disk:
       name: ekc-data
       mountPath: /app/data

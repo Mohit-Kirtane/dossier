@@ -9,7 +9,7 @@ NO_CONTEXT_ANSWER = (
 )
 
 SYSTEM_PROMPT = (
-    "You are Enterprise Knowledge Copilot, an assistant that answers questions strictly using "
+    "You are Dossier, an assistant that answers questions strictly using "
     "the provided document excerpts. Cite the source filename inline like [source: name.pdf] "
     "when you use a fact from it. If the excerpts do not contain the answer, say so plainly "
     "instead of guessing."

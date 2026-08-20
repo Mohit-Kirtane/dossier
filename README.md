@@ -1,7 +1,7 @@
-# Enterprise Knowledge Copilot
+# Dossier
 
-An enterprise AI platform built as a set of independent LangGraph workflows behind
-one FastAPI service:
+An enterprise AI platform — every answer filed and cited — built as a set of
+independent LangGraph workflows behind one FastAPI service:
 
 - **Document intelligence** — upload PDFs/DOCX/TXT, ask questions, get answers grounded
   in cited passages
@@ -11,7 +11,9 @@ one FastAPI service:
   retrieval is filtered to what the current role is permitted to see, enforced before
   any answer is generated
 
-Invoice intelligence is next on the roadmap below.
+All three workflows sit behind real account authentication (email/password or Google
+sign-in) — an admin can watch platform-wide usage on an activity dashboard. Invoice
+intelligence is next on the roadmap below.
 
 ## Stack
 
@@ -26,8 +28,11 @@ Invoice intelligence is next on the roadmap below.
 - **sqlglot** — parses and validates every LLM-generated query before it touches the database
 - **Google Gemini** — LLM inference via its OpenAI-compatible API (swappable for any OpenAI-compatible provider)
 - **PostgreSQL** (SQLite fallback for local dev) — document metadata, chat sessions/messages,
-  and a seeded mini-ERP dataset (departments, employees, customers, products, contracts,
-  invoices, payments, support tickets) for database chat
+  a seeded mini-ERP dataset (departments, employees, customers, products, contracts,
+  invoices, payments, support tickets) for database chat, and user accounts/activity log
+- **bcrypt + PyJWT** — password hashing and stateless session cookies for real user auth;
+  Google OAuth 2.0 (authorization code flow, hand-rolled with `httpx`) as an alternative
+  sign-in method
 
 ## Architecture
 
@@ -101,6 +106,40 @@ documents both carry an `allowed_roles` list in their chunk metadata, checked at
 retrieval time — a locked-out role never gets that content into its LLM prompt in
 the first place.
 
+### Authentication & activity monitoring
+
+Every workflow API route requires a logged-in user — visiting `/app` while logged out
+redirects to `/login`. Two independent sign-in paths, both issuing the same JWT
+(stored in an httpOnly, `SameSite=Lax` cookie):
+
+- **Email/password** — `POST /api/auth/register` and `/api/auth/login`; passwords are
+  hashed with `bcrypt`, never stored or logged in plain text.
+- **Google OAuth** — `GET /api/auth/google/login` redirects to Google's consent screen;
+  `GET /api/auth/google/callback` exchanges the authorization code for a profile
+  (email, name, picture) via `httpx`, verifying a `state` cookie against the callback's
+  `state` parameter to prevent CSRF. A Google-authenticated user whose email matches an
+  existing password account is linked to it rather than duplicated.
+
+This intentionally sits *beside* the RBAC workflow's "switch persona" control, not
+merged into it — the login system answers "is this a real, distinct visitor," while the
+persona switcher demonstrates permission-scoped retrieval without needing four real
+accounts to click through. A user's real identity from this auth layer is what activity
+logging is tied to, though.
+
+Every login, registration, question asked (with which workflow), and document upload is
+written to an `activity_log` table. Any user can see their own history at
+`/app/activity`; a user whose email is in the `ADMIN_EMAILS` env var also gets an
+"All users" view there, showing activity across every account.
+
+**Google OAuth setup** (optional — email/password auth works without it):
+
+1. In [Google Cloud Console](https://console.cloud.google.com/apis/credentials), create
+   an OAuth 2.0 Client ID of type "Web application."
+2. Add an authorized redirect URI: `http://localhost:8000/api/auth/google/callback` for
+   local dev, and `https://<your-app>.onrender.com/api/auth/google/callback` for a
+   Render deployment (update `GOOGLE_REDIRECT_URI` to match, in both cases).
+3. Set `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` in `.env` (or Render's dashboard).
+
 ## Running locally
 
 Backend:
@@ -125,8 +164,10 @@ npm install
 npm run dev
 ```
 
-Open the Vite dev URL it prints (typically http://localhost:5173) — upload a document,
-then ask a question about it.
+Open the Vite dev URL it prints (typically http://localhost:5173) — register an account
+(or sign in with Google, if configured), upload a document, then ask a question about it.
+To try the admin activity dashboard, set `ADMIN_EMAILS` in `.env` to the email you're
+about to register with, before signing up.
 
 By default the backend uses local SQLite (`./data/app.db`) and an on-disk FAISS index
 (`./data/faiss_index`) — no external services required.
@@ -161,11 +202,17 @@ includes a [`render.yaml`](render.yaml) Blueprint for one-click deploy to
    and provisions a free web service running the root `Dockerfile` (multi-stage: builds
    the React frontend, then bakes it into the FastAPI image), with a persistent 1GB
    disk mounted at `/app/data` for the FAISS index and uploads.
-3. When prompted for the two `sync: false` env vars, set:
+3. When prompted for the `sync: false` env vars, set at minimum:
    - `LLM_API_KEY` — your [Gemini API key](https://aistudio.google.com/apikey)
    - `DATABASE_URL` — the Neon connection string, with the driver scheme changed to
      `postgresql+psycopg2://` and `?sslmode=require` appended (Neon requires TLS)
+   - `ADMIN_EMAILS` — your email, to get the activity dashboard on signup
+
+   `JWT_SECRET` is auto-generated by the Blueprint. `LLM_API_KEY_FALLBACK` and the three
+   `GOOGLE_*` vars are optional — leave blank to skip the fallback key or Google sign-in.
 4. Deploy. Render builds the Docker image and serves the app at the assigned `.onrender.com` URL.
+   If using Google sign-in, update `GOOGLE_REDIRECT_URI` and the Google Cloud Console
+   authorized redirect URI to that URL once you know it (see setup steps above).
 
 Free-tier Render web services spin down after 15 minutes idle, so the first request
 after inactivity takes ~30-50s to cold-start — expected behavior for a free demo.

@@ -8,7 +8,7 @@ export function SiteHeader() {
       <Link to="/" className="flex items-center gap-2.5 text-paper">
         <Logo className="h-6 w-6 text-paper" />
         <span className="font-mono text-[13px] font-medium tracking-[0.12em]">
-          ENTERPRISE KNOWLEDGE COPILOT
+          DOSSIER
         </span>
       </Link>
 
@@ -20,7 +20,7 @@ export function SiteHeader() {
           Architecture
         </a>
         <a
-          href="https://github.com/Mohit-Kirtane/enterprise-knowledge-copilot"
+          href="https://github.com/Mohit-Kirtane/dossier"
           target="_blank"
           rel="noreferrer"
           className="flex items-center gap-1.5 transition hover:text-paper"

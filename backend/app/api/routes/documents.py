@@ -4,8 +4,11 @@ import uuid
 from fastapi import APIRouter, Depends, HTTPException, UploadFile
 from sqlalchemy.orm import Session
 
+from app.auth.activity import log_activity
+from app.auth.dependencies import get_current_user
 from app.core.config import get_settings
 from app.core.vectorstore import add_documents
+from app.db.auth_models import User
 from app.db.models import Document
 from app.db.session import get_db
 from app.ingestion.loaders import UnsupportedFileType, chunk_documents, load_file
@@ -15,7 +18,9 @@ router = APIRouter(prefix="/documents", tags=["documents"])
 
 
 @router.post("/upload", response_model=DocumentOut)
-async def upload_document(file: UploadFile, db: Session = Depends(get_db)) -> Document:
+async def upload_document(
+    file: UploadFile, user: User = Depends(get_current_user), db: Session = Depends(get_db)
+) -> Document:
     settings = get_settings()
     ext = os.path.splitext(file.filename or "")[1].lower()
     if ext not in {".pdf", ".docx", ".txt", ".md"}:
@@ -47,9 +52,13 @@ async def upload_document(file: UploadFile, db: Session = Depends(get_db)) -> Do
     db.add(record)
     db.commit()
     db.refresh(record)
+
+    log_activity(db, user.id, "document_uploaded", workflow="document_intelligence", detail=record.filename)
     return record
 
 
 @router.get("", response_model=list[DocumentOut])
-def list_documents(db: Session = Depends(get_db)) -> list[Document]:
+def list_documents(
+    _user: User = Depends(get_current_user), db: Session = Depends(get_db)
+) -> list[Document]:
     return db.query(Document).order_by(Document.uploaded_at.desc()).all()

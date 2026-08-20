@@ -3,6 +3,7 @@ import { Table2 } from "lucide-react";
 import { Logo } from "./brand/Logo.jsx";
 import { GithubMark } from "./brand/GithubMark.jsx";
 import { ModuleTabs } from "./ModuleTabs.jsx";
+import { UserMenu } from "./UserMenu.jsx";
 
 export function DbSchemaSidebar({ tables }) {
   return (
@@ -11,7 +12,7 @@ export function DbSchemaSidebar({ tables }) {
         <Logo className="h-6 w-6 shrink-0" />
         <div>
           <h1 className="font-display text-[15px] font-medium leading-tight">
-            Enterprise Knowledge Copilot
+            Dossier
           </h1>
           <p className="font-mono text-[10px] tracking-wide text-ink-soft">FILE—02 · DATABASE CHAT</p>
         </div>
@@ -48,7 +49,7 @@ export function DbSchemaSidebar({ tables }) {
       </div>
 
       <a
-        href="https://github.com/Mohit-Kirtane/enterprise-knowledge-copilot"
+        href="https://github.com/Mohit-Kirtane/dossier"
         target="_blank"
         rel="noreferrer"
         className="flex items-center gap-1.5 border-t border-rule pt-4 font-mono text-[11px] tracking-wide text-ink-soft transition hover:text-paper"
@@ -56,6 +57,8 @@ export function DbSchemaSidebar({ tables }) {
         <GithubMark className="h-3.5 w-3.5" />
         SOURCE
       </a>
+
+      <UserMenu />
     </aside>
   );
 }

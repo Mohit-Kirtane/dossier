@@ -1,7 +1,10 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
+from app.auth.activity import log_activity
+from app.auth.dependencies import get_current_user
 from app.core.errors import friendly_llm_error
+from app.db.auth_models import User
 from app.db.models import ChatMessage, ChatSession
 from app.db.session import get_db
 from app.graph.workflow import run_workflow
@@ -11,7 +14,9 @@ router = APIRouter(tags=["chat"])
 
 
 @router.post("/chat", response_model=ChatResponse)
-def chat(payload: ChatRequest, db: Session = Depends(get_db)) -> ChatResponse:
+def chat(
+    payload: ChatRequest, user: User = Depends(get_current_user), db: Session = Depends(get_db)
+) -> ChatResponse:
     if payload.session_id:
         session = db.get(ChatSession, payload.session_id)
         if session is None:
@@ -40,11 +45,14 @@ def chat(payload: ChatRequest, db: Session = Depends(get_db)) -> ChatResponse:
     )
     db.commit()
 
+    log_activity(db, user.id, "question_asked", workflow="document_intelligence", detail=payload.question[:200])
     return ChatResponse(session_id=session.id, answer=result["answer"], sources=result["sources"])
 
 
 @router.get("/chat/{session_id}/messages", response_model=list[ChatMessageOut])
-def get_messages(session_id: str, db: Session = Depends(get_db)) -> list[ChatMessage]:
+def get_messages(
+    session_id: str, _user: User = Depends(get_current_user), db: Session = Depends(get_db)
+) -> list[ChatMessage]:
     session = db.get(ChatSession, session_id)
     if session is None:
         raise HTTPException(status_code=404, detail="Chat session not found")

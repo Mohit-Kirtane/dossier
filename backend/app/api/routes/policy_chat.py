@@ -4,8 +4,11 @@ import uuid
 from fastapi import APIRouter, Depends, Form, HTTPException, UploadFile
 from sqlalchemy.orm import Session
 
+from app.auth.activity import log_activity
+from app.auth.dependencies import get_current_user
 from app.core.config import get_settings
 from app.core.errors import friendly_llm_error
+from app.db.auth_models import User
 from app.db.policy_models import PolicyDocument
 from app.db.session import get_db
 from app.ingestion.loaders import UnsupportedFileType, chunk_documents, load_file
@@ -18,12 +21,14 @@ router = APIRouter(prefix="/policy-chat", tags=["policy-chat"])
 
 
 @router.get("/personas", response_model=list[PersonaOut])
-def personas() -> list[dict]:
+def personas(_user: User = Depends(get_current_user)) -> list[dict]:
     return PERSONAS
 
 
 @router.get("/documents", response_model=list[PolicyDocumentOut])
-def list_documents(persona_id: str, db: Session = Depends(get_db)) -> list[PolicyDocumentOut]:
+def list_documents(
+    persona_id: str, _user: User = Depends(get_current_user), db: Session = Depends(get_db)
+) -> list[PolicyDocumentOut]:
     role = role_for_persona(persona_id)
     if role is None:
         raise HTTPException(status_code=404, detail="Unknown persona")
@@ -48,6 +53,7 @@ def list_documents(persona_id: str, db: Session = Depends(get_db)) -> list[Polic
 async def upload_policy_document(
     file: UploadFile,
     allowed_roles: list[str] = Form(...),
+    user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ) -> PolicyDocument:
     settings = get_settings()
@@ -85,11 +91,15 @@ async def upload_policy_document(
     db.add(record)
     db.commit()
     db.refresh(record)
+
+    log_activity(db, user.id, "document_uploaded", workflow="policy_retrieval", detail=record.filename)
     return record
 
 
 @router.post("", response_model=PolicyChatResponse)
-def chat(payload: PolicyChatRequest) -> PolicyChatResponse:
+def chat(
+    payload: PolicyChatRequest, user: User = Depends(get_current_user), db: Session = Depends(get_db)
+) -> PolicyChatResponse:
     role = role_for_persona(payload.persona_id)
     if role is None:
         raise HTTPException(status_code=404, detail="Unknown persona")
@@ -99,6 +109,13 @@ def chat(payload: PolicyChatRequest) -> PolicyChatResponse:
     except Exception as exc:  # noqa: BLE001 - translated to a safe, friendly message
         raise HTTPException(status_code=503, detail=friendly_llm_error(exc)) from exc
 
+    log_activity(
+        db,
+        user.id,
+        "question_asked",
+        workflow="policy_retrieval",
+        detail=f"[as {role}] {payload.question[:180]}",
+    )
     return PolicyChatResponse(
         answer=result["answer"],
         sources=result["sources"],

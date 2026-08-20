@@ -6,9 +6,9 @@ from fastapi.staticfiles import StaticFiles
 from starlette.exceptions import HTTPException as StarletteHTTPException
 from starlette.responses import Response
 
-from app.api.routes import chat, database_chat, documents, health, policy_chat
+from app.api.routes import activity, auth, chat, database_chat, documents, health, policy_chat
 from app.core.config import get_settings
-from app.db import demo_models, policy_models  # noqa: F401 - registers tables on Base.metadata
+from app.db import auth_models, demo_models, policy_models  # noqa: F401 - registers tables
 from app.db.session import SessionLocal, init_db
 from app.dbchat.seed import seed_demo_data
 from app.rbac.seed import seed_policy_documents
@@ -46,6 +46,8 @@ app.add_middleware(
 )
 
 app.include_router(health.router, prefix="/api")
+app.include_router(auth.router, prefix="/api")
+app.include_router(activity.router, prefix="/api")
 app.include_router(documents.router, prefix="/api")
 app.include_router(chat.router, prefix="/api")
 app.include_router(database_chat.router, prefix="/api")

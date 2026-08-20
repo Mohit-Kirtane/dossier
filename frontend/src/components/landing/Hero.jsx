@@ -30,7 +30,7 @@ export function Hero() {
             <ArrowRight className="h-4 w-4 transition group-hover:translate-x-0.5" />
           </Link>
           <a
-            href="https://github.com/Mohit-Kirtane/enterprise-knowledge-copilot"
+            href="https://github.com/Mohit-Kirtane/dossier"
             target="_blank"
             rel="noreferrer"
             className="flex items-center gap-2 rounded-md border border-rule px-5 py-3 font-body text-sm font-medium text-paper transition hover:border-ink-soft"

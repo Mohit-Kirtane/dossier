@@ -5,7 +5,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
 
-    app_name: str = "Enterprise Knowledge Copilot"
+    app_name: str = "Dossier"
     cors_origins: list[str] = ["*"]
 
     # LLM (Google Gemini, via its OpenAI-compatible endpoint)
@@ -30,7 +30,23 @@ class Settings(BaseSettings):
     retrieval_k: int = 4
     relevance_score_threshold: float = 0.0
 
+    # Auth
+    jwt_secret: str = "dev-secret-change-me-in-production"
+    jwt_expire_minutes: int = 60 * 24 * 7  # 7 days
+    cookie_secure: bool = False  # set True in production (HTTPS)
+    admin_emails: str = ""  # comma-separated; these emails get is_admin=True on signup/login
+
+    # Google OAuth (https://console.cloud.google.com/apis/credentials)
+    google_client_id: str = ""
+    google_client_secret: str = ""
+    google_redirect_uri: str = "http://localhost:8000/api/auth/google/callback"
+
 
 @lru_cache
 def get_settings() -> Settings:
     return Settings()
+
+
+def get_admin_emails() -> set[str]:
+    settings = get_settings()
+    return {e.strip().lower() for e in settings.admin_emails.split(",") if e.strip()}
