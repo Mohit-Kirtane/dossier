@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from "react";
-import { Send } from "lucide-react";
-import { MessageBubble } from "./MessageBubble.jsx";
+import { RotateCcw, Send } from "lucide-react";
+import { LedgerEntry } from "./LedgerEntry.jsx";
 
-export function ChatPanel({ messages, onSend, disabled }) {
+export function ChatPanel({ messages, onSend, onReset, disabled }) {
   const [input, setInput] = useState("");
   const bottomRef = useRef(null);
 
@@ -20,15 +20,37 @@ export function ChatPanel({ messages, onSend, disabled }) {
 
   return (
     <main className="flex h-full flex-1 flex-col">
-      <div className="flex-1 overflow-y-auto px-8 py-6">
+      <div className="flex items-center justify-between border-b border-rule px-8 py-4">
+        <p className="font-mono text-[11px] tracking-[0.18em] text-ink-soft">
+          WORKSPACE <span className="text-ink-soft/40">/</span> DOCUMENT INTELLIGENCE
+        </p>
+        {messages.length > 0 && (
+          <button
+            type="button"
+            onClick={onReset}
+            className="flex items-center gap-1.5 font-mono text-[11px] tracking-wide text-ink-soft transition hover:text-ochre"
+          >
+            <RotateCcw className="h-3.5 w-3.5" />
+            NEW SESSION
+          </button>
+        )}
+      </div>
+
+      <div className="flex-1 overflow-y-auto px-8 py-8">
         {messages.length === 0 ? (
-          <div className="mt-24 text-center font-body text-sm text-ink-soft">
-            Upload a document, then ask a question about it.
+          <div className="mx-auto mt-16 max-w-sm rounded-lg border border-dashed border-rule px-6 py-10 text-center">
+            <p className="font-mono text-[11px] font-medium tracking-[0.18em] text-ink-soft">
+              NO ENTRIES YET
+            </p>
+            <p className="mt-3 font-body text-sm leading-relaxed text-ink-soft">
+              Upload a document in the sidebar, then ask a question — every answer here comes
+              filed with its source.
+            </p>
           </div>
         ) : (
-          <div className="mx-auto flex max-w-3xl flex-col gap-4">
+          <div className="mx-auto flex max-w-2xl flex-col gap-5">
             {messages.map((m) => (
-              <MessageBubble key={m.id} message={m} />
+              <LedgerEntry key={m.id} message={m} />
             ))}
             <div ref={bottomRef} />
           </div>
@@ -37,7 +59,7 @@ export function ChatPanel({ messages, onSend, disabled }) {
 
       <form
         onSubmit={handleSubmit}
-        className="mx-auto flex w-full max-w-3xl items-center gap-3 border-t border-rule px-8 py-4"
+        className="mx-auto flex w-full max-w-2xl items-center gap-3 border-t border-rule px-8 py-5"
       >
         <input
           value={input}

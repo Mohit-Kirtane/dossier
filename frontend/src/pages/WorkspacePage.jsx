@@ -49,6 +49,7 @@ export default function WorkspacePage() {
                 id: pendingId,
                 role: "assistant",
                 content: err instanceof Error ? err.message : "Something went wrong.",
+                error: true,
               }
             : m,
         ),
@@ -58,10 +59,15 @@ export default function WorkspacePage() {
     }
   }
 
+  function handleReset() {
+    setMessages([]);
+    setSessionId(null);
+  }
+
   return (
     <div className="flex h-screen w-screen overflow-hidden bg-ink">
       <Sidebar documents={documents} onUpload={handleUpload} />
-      <ChatPanel messages={messages} onSend={handleSend} disabled={sending} />
+      <ChatPanel messages={messages} onSend={handleSend} onReset={handleReset} disabled={sending} />
     </div>
   );
 }
