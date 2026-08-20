@@ -28,3 +28,5 @@ pyjwt==2.10.1
 
 pytest==8.3.4
 httpx==0.28.1
+
+tracewell-sdk @ git+https://github.com/Mohit-Kirtane/tracewell.git#subdirectory=sdk
