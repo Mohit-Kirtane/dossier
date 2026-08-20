@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Enterprise Knowledge Copilot</title>
+<style>
+  :root {
+    --bg: #0f1115; --panel: #161a22; --border: #262b36; --text: #e6e9ef;
+    --muted: #8b93a7; --accent: #6366f1; --accent-hover: #4f52d6; --bubble-user: #262b36;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: -apple-system, Segoe UI, Roboto, sans-serif; background: var(--bg); color: var(--text); }
+  .layout { display: grid; grid-template-columns: 300px 1fr; height: 100vh; }
+  .sidebar { border-right: 1px solid var(--border); padding: 20px; overflow-y: auto; }
+  .sidebar h1 { font-size: 16px; margin: 0 0 4px; }
+  .sidebar p.tag { color: var(--muted); font-size: 12px; margin: 0 0 20px; }
+  .upload-box { border: 1px dashed var(--border); border-radius: 10px; padding: 16px; text-align: center; cursor: pointer; }
+  .upload-box:hover { border-color: var(--accent); }
+  .doc-list { list-style: none; padding: 0; margin: 16px 0 0; display: flex; flex-direction: column; gap: 8px; }
+  .doc-item { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; font-size: 13px; }
+  .doc-item .name { font-weight: 600; display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .doc-item .meta { color: var(--muted); font-size: 11px; }
+  .chat { display: flex; flex-direction: column; height: 100vh; }
+  .messages { flex: 1; overflow-y: auto; padding: 24px; display: flex; flex-direction: column; gap: 16px; }
+  .msg { max-width: 70%; padding: 12px 16px; border-radius: 12px; line-height: 1.5; font-size: 14px; white-space: pre-wrap; }
+  .msg.user { align-self: flex-end; background: var(--bubble-user); }
+  .msg.assistant { align-self: flex-start; background: var(--panel); border: 1px solid var(--border); }
+  .sources { margin-top: 8px; font-size: 11px; color: var(--muted); }
+  .composer { border-top: 1px solid var(--border); padding: 16px 24px; display: flex; gap: 10px; }
+  .composer input { flex: 1; background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 12px 14px; color: var(--text); font-size: 14px; }
+  .composer button, .upload-box input[type=file] { display: none; }
+  .composer button.send { display: inline-block; background: var(--accent); border: none; color: white; padding: 0 20px; border-radius: 8px; cursor: pointer; font-size: 14px; }
+  .composer button.send:hover { background: var(--accent-hover); }
+  .empty { color: var(--muted); text-align: center; margin-top: 80px; font-size: 14px; }
+</style>
+</head>
+<body>
+<div class="layout">
+  <aside class="sidebar">
+    <h1>Enterprise Knowledge Copilot</h1>
+    <p class="tag">Document intelligence · RAG over your files</p>
+    <label class="upload-box" id="uploadBox">
+      <span id="uploadLabel">Click to upload a PDF, DOCX, or TXT</span>
+      <input type="file" id="fileInput" accept=".pdf,.docx,.txt,.md" />
+    </label>
+    <ul class="doc-list" id="docList"></ul>
+  </aside>
+  <main class="chat">
+    <div class="messages" id="messages">
+      <div class="empty" id="emptyState">Upload a document, then ask a question about it.</div>
+    </div>
+    <div class="composer">
+      <input id="questionInput" type="text" placeholder="Ask about your documents..." />
+      <button class="send" id="sendBtn">Send</button>
+    </div>
+  </main>
+</div>
+<script>
+const api = (path, opts) => fetch(`/api${path}`, opts).then(r => r.json());
+let sessionId = null;
+
+async function loadDocuments() {
+  const docs = await api('/documents');
+  const list = document.getElementById('docList');
+  list.innerHTML = '';
+  docs.forEach(d => {
+    const li = document.createElement('li');
+    li.className = 'doc-item';
+    li.innerHTML = `<span class="name">${d.filename}</span><span class="meta">${d.chunk_count} chunks</span>`;
+    list.appendChild(li);
+  });
+}
+
+document.getElementById('fileInput').addEventListener('change', async (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  document.getElementById('uploadLabel').textContent = `Uploading ${file.name}...`;
+  const form = new FormData();
+  form.append('file', file);
+  try {
+    await fetch('/api/documents/upload', { method: 'POST', body: form });
+    await loadDocuments();
+  } finally {
+    document.getElementById('uploadLabel').textContent = 'Click to upload a PDF, DOCX, or TXT';
+    e.target.value = '';
+  }
+});
+
+function appendMessage(role, text, sources) {
+  document.getElementById('emptyState')?.remove();
+  const el = document.createElement('div');
+  el.className = `msg ${role}`;
+  el.textContent = text;
+  if (sources && sources.length) {
+    const s = document.createElement('div');
+    s.className = 'sources';
+    s.textContent = 'Sources: ' + [...new Set(sources.map(s => s.source))].join(', ');
+    el.appendChild(s);
+  }
+  const container = document.getElementById('messages');
+  container.appendChild(el);
+  container.scrollTop = container.scrollHeight;
+}
+
+async function sendQuestion() {
+  const input = document.getElementById('questionInput');
+  const question = input.value.trim();
+  if (!question) return;
+  input.value = '';
+  appendMessage('user', question);
+  const res = await api('/chat', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ question, session_id: sessionId }),
+  });
+  sessionId = res.session_id;
+  appendMessage('assistant', res.answer, res.sources);
+}
+
+document.getElementById('sendBtn').addEventListener('click', sendQuestion);
+document.getElementById('questionInput').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') sendQuestion();
+});
+
+loadDocuments();
+</script>
+</body>
+</html>
