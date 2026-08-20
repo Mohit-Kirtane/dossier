@@ -3,9 +3,9 @@ import { RotateCcw, Send } from "lucide-react";
 import { DbLedgerEntry } from "./DbLedgerEntry.jsx";
 
 const EXAMPLES = [
-  "Which department has the highest total salary cost?",
-  "What are the top 3 products by total revenue?",
-  "How many employees were hired in each department?",
+  "Which customers have overdue invoices, and how much do they owe?",
+  "Which sales rep owns the most active contract value?",
+  "What's the average time to close a support ticket, by priority?",
 ];
 
 export function DbChatPanel({ messages, onSend, onReset, disabled }) {
@@ -47,8 +47,8 @@ export function DbChatPanel({ messages, onSend, onReset, disabled }) {
               NO QUERIES YET
             </p>
             <p className="mt-3 font-body text-sm leading-relaxed text-ink-soft">
-              Ask a question in plain language about departments, employees, products, or
-              orders — no SQL required.
+              Ask a question in plain language about customers, contracts, invoices,
+              payments, or support tickets — no SQL required.
             </p>
             <div className="mt-5 flex flex-col gap-2">
               {EXAMPLES.map((ex) => (
@@ -83,7 +83,7 @@ export function DbChatPanel({ messages, onSend, onReset, disabled }) {
         <input
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          placeholder="Ask about departments, employees, products, or orders..."
+          placeholder="Ask about customers, contracts, invoices, or support tickets..."
           className="flex-1 rounded-lg border border-rule bg-ink-raised px-4 py-3 font-body text-sm text-paper outline-none placeholder:text-ink-soft focus:border-ochre"
         />
         <button

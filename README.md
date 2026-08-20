@@ -26,7 +26,8 @@ Invoice intelligence is next on the roadmap below.
 - **sqlglot** — parses and validates every LLM-generated query before it touches the database
 - **Google Gemini** — LLM inference via its OpenAI-compatible API (swappable for any OpenAI-compatible provider)
 - **PostgreSQL** (SQLite fallback for local dev) — document metadata, chat sessions/messages,
-  and a seeded demo dataset (departments/employees/products/orders) for database chat
+  and a seeded mini-ERP dataset (departments, employees, customers, products, contracts,
+  invoices, payments, support tickets) for database chat
 
 ## Architecture
 
