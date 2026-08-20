@@ -58,13 +58,24 @@ LLM_API_KEY=... docker compose up --build
 
 ## Deployment
 
-The backend is a single stateless-except-for-`data/`-volume container:
+The backend is a single stateless-except-for-`data/`-volume container. This repo
+includes a [`render.yaml`](render.yaml) Blueprint for one-click deploy to
+[Render](https://render.com):
 
-1. Provision a Postgres instance (e.g. [Neon](https://neon.tech) free tier) and set `DATABASE_URL`.
-2. Deploy `backend/Dockerfile` to a container host (Render, Fly.io, Railway, etc.), with a persistent volume mounted at `/app/data` for the FAISS index and uploads.
-3. Set `LLM_API_KEY`, `LLM_MODEL`, and `DATABASE_URL` as environment variables on the host.
+1. Create a free Postgres database on [Neon](https://neon.tech) and copy its connection string.
+2. On Render: **New → Blueprint**, point it at this GitHub repo. It reads `render.yaml`
+   and provisions a free web service running `backend/Dockerfile`, with a persistent
+   1GB disk mounted at `/app/data` for the FAISS index and uploads.
+3. When prompted for the two `sync: false` env vars, set:
+   - `LLM_API_KEY` — your [Gemini API key](https://aistudio.google.com/apikey)
+   - `DATABASE_URL` — the Neon connection string, with the driver scheme changed to
+     `postgresql+psycopg2://` and `?sslmode=require` appended (Neon requires TLS)
+4. Deploy. Render builds the Docker image and serves the app at the assigned `.onrender.com` URL.
 
-See `.env.example` for the full list of configuration options.
+Free-tier Render web services spin down after 15 minutes idle, so the first request
+after inactivity takes ~30-50s to cold-start — expected behavior for a free demo.
+
+See `.env.example` for the full list of configuration options if deploying elsewhere.
 
 ## Roadmap
 

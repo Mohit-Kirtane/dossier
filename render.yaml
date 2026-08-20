@@ -1,0 +1,24 @@
+services:
+  - type: web
+    name: enterprise-knowledge-copilot
+    runtime: docker
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    plan: free
+    envVars:
+      - key: LLM_API_KEY
+        sync: false
+      - key: LLM_MODEL
+        value: gemini-3.6-flash
+      - key: LLM_BASE_URL
+        value: https://generativelanguage.googleapis.com/v1beta/openai/
+      - key: DATABASE_URL
+        sync: false
+      - key: FAISS_INDEX_DIR
+        value: /app/data/faiss_index
+      - key: UPLOAD_DIR
+        value: /app/data/uploads
+    disk:
+      name: ekc-data
+      mountPath: /app/data
+      sizeGB: 1
