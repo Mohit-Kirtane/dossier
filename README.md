@@ -1,22 +1,33 @@
 # Enterprise Knowledge Copilot
 
-A document intelligence RAG service: upload PDFs/DOCX/TXT, and ask questions
-answered from their content with cited sources. Built as the first workflow of
-a larger planned enterprise AI platform (database chat, RBAC-aware policy
-retrieval, and invoice intelligence are on the roadmap below).
+An enterprise AI platform built as a set of independent LangGraph workflows behind
+one FastAPI service:
+
+- **Document intelligence** — upload PDFs/DOCX/TXT, ask questions, get answers grounded
+  in cited passages
+- **Database chat** — ask questions in plain language over a structured dataset; the
+  assistant writes, validates, and runs a read-only SQL query and explains the result
+
+RBAC-aware policy retrieval and invoice intelligence are next on the roadmap below.
 
 ## Stack
 
-- **React + TypeScript + Tailwind** (Vite) — chat UI with document upload sidebar
+- **React + JavaScript + Tailwind** (Vite) — chat UI, one workspace per workflow
 - **FastAPI** — HTTP API, and serves the built frontend as static assets in production
-- **LangGraph** — orchestrates retrieval → relevance filtering → generation as an explicit graph
+- **LangGraph** — each workflow is an explicit state graph (retrieve/generate for
+  documents; generate → validate → execute → summarize, with self-correcting retries,
+  for database chat)
 - **LangChain** — document loaders, text splitting, vector store integration
 - **FAISS** — local vector index, persisted to disk
 - **Sentence-Transformers** (`all-MiniLM-L6-v2`) — local embeddings, no API quota used
+- **sqlglot** — parses and validates every LLM-generated query before it touches the database
 - **Google Gemini** — LLM inference via its OpenAI-compatible API (swappable for any OpenAI-compatible provider)
-- **PostgreSQL** (SQLite fallback for local dev) — document metadata, chat sessions/messages
+- **PostgreSQL** (SQLite fallback for local dev) — document metadata, chat sessions/messages,
+  and a seeded demo dataset (departments/employees/products/orders) for database chat
 
 ## Architecture
+
+### Document intelligence
 
 ```
 Upload → load & chunk (LangChain loaders + RecursiveCharacterTextSplitter)
@@ -31,6 +42,28 @@ Question → LangGraph:
 Retrieval is filtered by a similarity-score threshold before any LLM call is made,
 so out-of-scope questions never spend LLM quota — important when running on a
 rate-limited free-tier API key.
+
+### Database chat
+
+```
+Question → LangGraph:
+    check_intent (regex guard for delete/update/insert/drop phrasing)
+        -> if write intent: refuse immediately, 0 LLM calls
+        -> else: generate_sql (Gemini, schema-aware prompt)
+             -> validate_sql (sqlglot: single statement, SELECT-only, whitelisted
+                tables only, LIMIT enforced)
+                  -> on failure: loop back to generate_sql once with the error, then give up
+             -> execute_sql (read-only query against the demo dataset)
+                  -> on failure: same self-correction retry as above
+             -> summarize (Gemini explains the result in plain language)
+```
+
+Every generated query is parsed with `sqlglot` and checked against a table whitelist
+before execution — the model never gets to run arbitrary SQL. A question that implies
+a write ("delete...", "update...") is refused before any SQL is generated, and the
+summarizer is explicitly instructed never to claim data was changed (it only describes
+read-only results) — both guard against the model hallucinating that a mutation
+succeeded when it was actually blocked.
 
 ## Running locally
 
@@ -103,12 +136,18 @@ after inactivity takes ~30-50s to cold-start — expected behavior for a free de
 
 See `.env.example` for the full list of configuration options if deploying elsewhere.
 
+> **Note on the live demo's LLM quota:** `gemini-3.6-flash`'s free tier caps out at a
+> small number of requests per day, shared across both workflows. If the demo responds
+> with "the AI provider's request quota is exhausted," that's this limit — the app
+> degrades gracefully rather than erroring out, and normal use resumes once the quota
+> resets. Point `LLM_API_KEY`/`LLM_MODEL` at a higher-quota provider for production use.
+
 ## Roadmap
 
-This repo currently implements **document intelligence**. Planned additions,
-each as an independent LangGraph workflow behind the same FastAPI service:
+This repo currently implements **document intelligence** and **database chat**.
+Planned additions, each as an independent LangGraph workflow behind the same
+FastAPI service:
 
-- **Database chat** — natural-language-to-SQL over Postgres/MongoDB collections
 - **RBAC-aware policy retrieval** — permission-scoped retrieval over policy documents by role
 - **Invoice intelligence** — structured extraction and Q&A over invoice documents
 

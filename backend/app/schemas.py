@@ -39,3 +39,24 @@ class ChatMessageOut(BaseModel):
     created_at: datetime
 
     model_config = {"from_attributes": True}
+
+
+class DbChatRequest(BaseModel):
+    question: str
+
+
+class DbChatResponse(BaseModel):
+    sql: str
+    columns: list[str]
+    rows: list[dict]
+    answer: str
+
+
+class SchemaColumnOut(BaseModel):
+    name: str
+    type: str
+
+
+class SchemaTableOut(BaseModel):
+    table: str
+    columns: list[SchemaColumnOut]

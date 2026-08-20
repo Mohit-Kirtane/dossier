@@ -5,13 +5,15 @@ const WORKFLOWS = [
   {
     code: "FILE—01",
     status: "LIVE",
+    path: "/app",
     title: "Document intelligence",
     description: "Upload PDFs, DOCX, or text. Ask questions, get answers grounded in cited passages.",
     icon: FileText,
   },
   {
     code: "FILE—02",
-    status: "QUEUED",
+    status: "LIVE",
+    path: "/app/database-chat",
     title: "Database chat",
     description: "Query structured databases in plain language instead of writing SQL by hand.",
     icon: Database,
@@ -73,7 +75,7 @@ function WorkflowCard({ workflow }) {
   );
 
   return isLive ? (
-    <Link to="/app" className="block h-full">
+    <Link to={workflow.path} className="block h-full">
       {content}
     </Link>
   ) : (

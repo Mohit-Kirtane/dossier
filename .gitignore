@@ -20,5 +20,6 @@ frontend/dist/
 .vscode/
 .idea/
 .DS_Store
+*.log
 
 node_modules/
