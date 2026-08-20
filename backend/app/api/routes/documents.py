@@ -11,7 +11,13 @@ from app.core.vectorstore import add_documents
 from app.db.auth_models import User
 from app.db.models import Document
 from app.db.session import get_db
-from app.ingestion.loaders import UnsupportedFileType, chunk_documents, load_file
+from app.ingestion.loaders import (
+    FileTooLarge,
+    UnsupportedFileType,
+    chunk_documents,
+    ensure_within_upload_size_limit,
+    load_file,
+)
 from app.schemas import DocumentOut
 
 router = APIRouter(prefix="/documents", tags=["documents"])
@@ -26,11 +32,16 @@ async def upload_document(
     if ext not in {".pdf", ".docx", ".txt", ".md"}:
         raise HTTPException(status_code=400, detail=f"Unsupported file type: {ext or 'unknown'}")
 
+    contents = await file.read()
+    try:
+        ensure_within_upload_size_limit(contents)
+    except FileTooLarge as exc:
+        raise HTTPException(status_code=413, detail=str(exc)) from exc
+
     os.makedirs(settings.upload_dir, exist_ok=True)
     document_id = str(uuid.uuid4())
     stored_path = os.path.join(settings.upload_dir, f"{document_id}{ext}")
 
-    contents = await file.read()
     with open(stored_path, "wb") as f:
         f.write(contents)
 

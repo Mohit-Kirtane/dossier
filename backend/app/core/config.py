@@ -23,6 +23,7 @@ class Settings(BaseSettings):
     upload_dir: str = "./data/uploads"
     policy_faiss_index_dir: str = "./data/policy_faiss_index"
     policy_upload_dir: str = "./data/policy_uploads"
+    max_upload_size_mb: int = 5
 
     # Retrieval / chunking
     chunk_size: int = 1000

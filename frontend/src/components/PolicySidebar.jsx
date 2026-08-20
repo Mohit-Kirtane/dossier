@@ -5,6 +5,7 @@ import { Logo } from "./brand/Logo.jsx";
 import { GithubMark } from "./brand/GithubMark.jsx";
 import { ModuleTabs } from "./ModuleTabs.jsx";
 import { UserMenu } from "./UserMenu.jsx";
+import { checkUploadSize, MAX_UPLOAD_SIZE_MB } from "../lib/uploadLimits.js";
 
 const ROLE_LABELS = {
   employee: "Employee",
@@ -32,6 +33,13 @@ export function PolicySidebar({ personas, activePersonaId, onSwitchPersona, docu
       return;
     }
     setError(null);
+    try {
+      checkUploadSize(file);
+    } catch (err) {
+      setError(err.message);
+      if (inputRef.current) inputRef.current.value = "";
+      return;
+    }
     setUploading(true);
     try {
       await onUpload(file, selectedRoles);
@@ -118,7 +126,7 @@ export function PolicySidebar({ personas, activePersonaId, onSwitchPersona, docu
           ) : (
             <UploadCloud className="h-4 w-4" />
           )}
-          <span>{uploading ? "Uploading…" : "Click to upload a PDF, DOCX, or TXT"}</span>
+          <span>{uploading ? "Uploading…" : `Click to upload a PDF, DOCX, or TXT (max ${MAX_UPLOAD_SIZE_MB} MB)`}</span>
           <input
             ref={inputRef}
             type="file"
