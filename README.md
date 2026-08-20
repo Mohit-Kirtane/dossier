@@ -69,6 +69,15 @@ summarizer is explicitly instructed never to claim data was changed (it only des
 read-only results) — both guard against the model hallucinating that a mutation
 succeeded when it was actually blocked.
 
+The demo dataset is a small but interconnected B2B SaaS business: HR (departments,
+employees with a manager hierarchy), sales (customers, contracts), finance (invoices,
+payments — including realistic paid/overdue/pending states), and support (tickets with
+priority and resolution time). It's generated deterministically (fixed random seed,
+fixed reference "today") on first startup via `app/dbchat/seed.py`, so questions that
+span multiple tables — "which customers have overdue invoices," "which sales rep owns
+the most active contract value" — have real, sensible answers rather than a handful of
+toy rows.
+
 ### RBAC-aware policy retrieval
 
 ```
