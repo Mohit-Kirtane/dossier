@@ -60,3 +60,39 @@ class SchemaColumnOut(BaseModel):
 class SchemaTableOut(BaseModel):
     table: str
     columns: list[SchemaColumnOut]
+
+
+class PersonaOut(BaseModel):
+    id: str
+    name: str
+    title: str
+    role: str
+
+
+class PolicyDocumentOut(BaseModel):
+    id: str
+    filename: str
+    allowed_roles: list[str]
+    chunk_count: int
+    uploaded_at: datetime
+    visible: bool = True
+
+    model_config = {"from_attributes": True}
+
+
+class PolicyChatRequest(BaseModel):
+    question: str
+    persona_id: str
+
+
+class PolicySourceOut(BaseModel):
+    source: str
+    content: str
+    score: float
+
+
+class PolicyChatResponse(BaseModel):
+    answer: str
+    sources: list[PolicySourceOut]
+    role: str
+    restricted: bool

@@ -8,6 +8,8 @@ services:
     envVars:
       - key: LLM_API_KEY
         sync: false
+      - key: LLM_API_KEY_FALLBACK
+        sync: false
       - key: LLM_MODEL
         value: gemini-3.6-flash
       - key: LLM_BASE_URL
@@ -18,6 +20,10 @@ services:
         value: /app/data/faiss_index
       - key: UPLOAD_DIR
         value: /app/data/uploads
+      - key: POLICY_FAISS_INDEX_DIR
+        value: /app/data/policy_faiss_index
+      - key: POLICY_UPLOAD_DIR
+        value: /app/data/policy_uploads
     disk:
       name: ekc-data
       mountPath: /app/data
