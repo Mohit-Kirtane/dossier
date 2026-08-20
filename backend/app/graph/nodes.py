@@ -1,8 +1,27 @@
+import re
+
 from app.core.config import get_settings
 from app.core.llm import get_llm
 from app.core.smalltalk import is_smalltalk
 from app.core.vectorstore import similarity_search_with_score
 from app.graph.state import GraphState
+
+_OVERVIEW_RE = re.compile(
+    r"\b(what is (this|it|the (document|pdf|file|upload(ed)?( document| pdf| file)?))"
+    r"( document| pdf| file)? about|"
+    r"what does (this|it) (document|pdf|file|say)|"
+    r"(summarize|summarise|give me a summary|tl;?dr|overview) (this|it|of this|of the document)?)\b",
+    re.IGNORECASE,
+)
+
+
+def _is_overview_question(question: str) -> bool:
+    """Broad 'what is this about' / 'summarize this' questions rarely score
+    above the relevance threshold against any single chunk - there's no
+    passage that's semantically 'about being a summary'. When a specific
+    document is scoped, skip the threshold for these and just hand the model
+    the top retrieved chunks instead of failing with NO_CONTEXT."""
+    return bool(_OVERVIEW_RE.search(question.strip()))
 
 NO_CONTEXT_ANSWER = (
     "I couldn't find anything relevant to that in the uploaded documents. "
@@ -33,11 +52,15 @@ SYSTEM_PROMPT = (
 
 def retrieve_node(state: GraphState) -> GraphState:
     settings = get_settings()
-    results = similarity_search_with_score(state["question"], k=settings.retrieval_k)
+    document_id = state.get("document_id")
+    results = similarity_search_with_score(
+        state["question"], k=settings.retrieval_k, document_id=document_id
+    )
+    skip_threshold = bool(document_id) and _is_overview_question(state["question"])
     sources = [
         {"source": doc.metadata.get("source", "unknown"), "content": doc.page_content, "score": score}
         for doc, score in results
-        if score >= settings.relevance_score_threshold
+        if skip_threshold or score >= settings.relevance_score_threshold
     ]
     return {**state, "sources": sources}
 

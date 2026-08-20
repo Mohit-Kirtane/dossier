@@ -8,6 +8,7 @@ export default function WorkspacePage() {
   const [messages, setMessages] = useState([]);
   const [sessionId, setSessionId] = useState(null);
   const [sending, setSending] = useState(false);
+  const [selectedDocumentId, setSelectedDocumentId] = useState(null);
 
   const refreshDocuments = useCallback(async () => {
     setDocuments(await listDocuments());
@@ -18,8 +19,19 @@ export default function WorkspacePage() {
   }, [refreshDocuments]);
 
   async function handleUpload(file) {
-    await uploadDocument(file);
+    const uploaded = await uploadDocument(file);
     await refreshDocuments();
+    // Scope the conversation to the file just uploaded, since that's almost
+    // always what the user wants to ask about next.
+    setSelectedDocumentId(uploaded.id);
+    setMessages([]);
+    setSessionId(null);
+  }
+
+  function handleSelectDocument(documentId) {
+    setSelectedDocumentId(documentId);
+    setMessages([]);
+    setSessionId(null);
   }
 
   async function handleSend(question) {
@@ -32,7 +44,7 @@ export default function WorkspacePage() {
     ]);
     setSending(true);
     try {
-      const res = await sendChatMessage(question, sessionId);
+      const res = await sendChatMessage(question, sessionId, selectedDocumentId);
       setSessionId(res.session_id);
       setMessages((prev) =>
         prev.map((m) =>
@@ -64,10 +76,23 @@ export default function WorkspacePage() {
     setSessionId(null);
   }
 
+  const scopedDocument = documents.find((d) => d.id === selectedDocumentId);
+
   return (
     <div className="flex h-screen w-screen overflow-hidden bg-ink">
-      <Sidebar documents={documents} onUpload={handleUpload} />
-      <ChatPanel messages={messages} onSend={handleSend} onReset={handleReset} disabled={sending} />
+      <Sidebar
+        documents={documents}
+        onUpload={handleUpload}
+        selectedDocumentId={selectedDocumentId}
+        onSelectDocument={handleSelectDocument}
+      />
+      <ChatPanel
+        messages={messages}
+        onSend={handleSend}
+        onReset={handleReset}
+        disabled={sending}
+        scopedDocument={scopedDocument?.filename}
+      />
     </div>
   );
 }

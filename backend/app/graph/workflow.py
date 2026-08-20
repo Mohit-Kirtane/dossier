@@ -34,6 +34,14 @@ def get_workflow():
     return graph.compile()
 
 
-def run_workflow(question: str, chat_history: list[dict]) -> GraphState:
+def run_workflow(question: str, chat_history: list[dict], document_id: str | None = None) -> GraphState:
     workflow = get_workflow()
-    return workflow.invoke({"question": question, "chat_history": chat_history, "sources": [], "answer": ""})
+    return workflow.invoke(
+        {
+            "question": question,
+            "chat_history": chat_history,
+            "document_id": document_id,
+            "sources": [],
+            "answer": "",
+        }
+    )

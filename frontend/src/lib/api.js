@@ -18,10 +18,10 @@ export function uploadDocument(file) {
   );
 }
 
-export function sendChatMessage(question, sessionId) {
+export function sendChatMessage(question, sessionId, documentId) {
   return fetch("/api/chat", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ question, session_id: sessionId }),
+    body: JSON.stringify({ question, session_id: sessionId, document_id: documentId ?? null }),
   }).then((res) => unwrap(res));
 }

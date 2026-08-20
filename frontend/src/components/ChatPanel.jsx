@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { RotateCcw, Send } from "lucide-react";
 import { LedgerEntry } from "./LedgerEntry.jsx";
 
-export function ChatPanel({ messages, onSend, onReset, disabled }) {
+export function ChatPanel({ messages, onSend, onReset, disabled, scopedDocument }) {
   const [input, setInput] = useState("");
   const bottomRef = useRef(null);
 
@@ -23,6 +23,13 @@ export function ChatPanel({ messages, onSend, onReset, disabled }) {
       <div className="flex items-center justify-between border-b border-rule px-8 py-4">
         <p className="font-mono text-[11px] tracking-[0.18em] text-ink-soft">
           WORKSPACE <span className="text-ink-soft/40">/</span> DOCUMENT INTELLIGENCE
+          {scopedDocument && (
+            <>
+              {" "}
+              <span className="text-ink-soft/40">/</span>{" "}
+              <span className="text-ochre">SCOPED TO {scopedDocument.toUpperCase()}</span>
+            </>
+          )}
         </p>
         {messages.length > 0 && (
           <button
@@ -43,8 +50,9 @@ export function ChatPanel({ messages, onSend, onReset, disabled }) {
               NO ENTRIES YET
             </p>
             <p className="mt-3 font-body text-sm leading-relaxed text-ink-soft">
-              Upload a document in the sidebar, then ask a question — every answer here comes
-              filed with its source.
+              {scopedDocument
+                ? `Ask anything about ${scopedDocument} — every answer here comes filed with its source.`
+                : "Upload a document in the sidebar, then select it to ask a question — every answer here comes filed with its source."}
             </p>
           </div>
         ) : (

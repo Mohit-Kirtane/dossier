@@ -57,9 +57,18 @@ def _cosine_similarity_from_l2(l2_distance: float) -> float:
     return 1 - (l2_distance**2) / 2
 
 
-def similarity_search_with_score(query: str, k: int) -> list[tuple[Document, float]]:
+def similarity_search_with_score(
+    query: str, k: int, document_id: str | None = None
+) -> list[tuple[Document, float]]:
     store = get_vectorstore()
-    results = store.similarity_search_with_score(query, k=k)
+    if document_id:
+        # Filtering narrows the candidate pool, so over-fetch before the metadata
+        # filter is applied or a scoped document can come back with too few chunks.
+        results = store.similarity_search_with_score(
+            query, k=k, filter={"document_id": document_id}, fetch_k=max(k * 8, 50)
+        )
+    else:
+        results = store.similarity_search_with_score(query, k=k)
     return [
         (doc, _cosine_similarity_from_l2(l2_distance))
         for doc, l2_distance in results

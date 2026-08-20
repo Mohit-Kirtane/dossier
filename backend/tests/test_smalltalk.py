@@ -36,6 +36,9 @@ def test_is_smalltalk_true(question):
         "What are the salary bands for each level?",
         "hire me a data engineer",
         "high salary employees in engineering",
+        "what is this document about?",
+        "what is this pdf about",
+        "what is the uploaded file about?",
     ],
 )
 def test_is_smalltalk_false(question):

@@ -30,7 +30,7 @@ def chat(
     history = [{"role": m.role, "content": m.content} for m in session.messages]
 
     try:
-        result = run_workflow(payload.question, history)
+        result = run_workflow(payload.question, history, document_id=payload.document_id)
     except Exception as exc:  # noqa: BLE001 - translated to a safe, friendly message
         raise HTTPException(status_code=503, detail=friendly_llm_error(exc)) from exc
 
