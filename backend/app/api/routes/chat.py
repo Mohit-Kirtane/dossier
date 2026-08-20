@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
+from app.core.errors import friendly_llm_error
 from app.db.models import ChatMessage, ChatSession
 from app.db.session import get_db
 from app.graph.workflow import run_workflow
@@ -23,7 +24,10 @@ def chat(payload: ChatRequest, db: Session = Depends(get_db)) -> ChatResponse:
 
     history = [{"role": m.role, "content": m.content} for m in session.messages]
 
-    result = run_workflow(payload.question, history)
+    try:
+        result = run_workflow(payload.question, history)
+    except Exception as exc:  # noqa: BLE001 - translated to a safe, friendly message
+        raise HTTPException(status_code=503, detail=friendly_llm_error(exc)) from exc
 
     db.add(ChatMessage(session_id=session.id, role="user", content=payload.question))
     db.add(

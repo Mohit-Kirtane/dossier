@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { FileText, Loader2, UploadCloud } from "lucide-react";
 import { Logo } from "./brand/Logo.jsx";
 import { GithubMark } from "./brand/GithubMark.jsx";
+import { ModuleTabs } from "./ModuleTabs.jsx";
 
 export function Sidebar({ documents, onUpload }) {
   const [uploading, setUploading] = useState(false);
@@ -34,6 +35,8 @@ export function Sidebar({ documents, onUpload }) {
           <p className="font-mono text-[10px] tracking-wide text-ink-soft">FILE—01 · DOCUMENT INTELLIGENCE</p>
         </div>
       </Link>
+
+      <ModuleTabs />
 
       <label
         className={`flex cursor-pointer flex-col items-center gap-2 rounded-lg border border-dashed border-rule px-4 py-6 text-center font-body text-sm text-ink-soft transition hover:border-ochre hover:text-paper ${
