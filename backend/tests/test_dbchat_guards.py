@@ -1,6 +1,7 @@
 import pytest
 
 from app.dbchat.nodes import check_intent_node
+from app.dbchat.schema_info import ALLOWED_TABLES, get_schema_description, get_schema_summary
 from app.dbchat.sql_guard import SqlValidationError, validate_and_prepare_sql
 
 
@@ -41,6 +42,29 @@ def test_allows_ordinary_select():
         "sqlite",
     )
     assert sql.upper().startswith("SELECT")
+
+
+def test_allows_joins_across_the_full_erp_schema():
+    sql = validate_and_prepare_sql(
+        "SELECT c.name, SUM(i.amount) FROM demo_customers c "
+        "JOIN demo_contracts co ON co.customer_id = c.id "
+        "JOIN demo_invoices i ON i.contract_id = co.id "
+        "WHERE i.status = 'Overdue' GROUP BY c.name",
+        "sqlite",
+    )
+    assert sql.upper().startswith("SELECT")
+
+
+def test_schema_summary_covers_all_whitelisted_tables():
+    summary = get_schema_summary()
+    assert {t["table"] for t in summary} == set(ALLOWED_TABLES)
+    assert all(t["columns"] for t in summary)
+
+
+def test_schema_description_mentions_every_table():
+    description = get_schema_description()
+    for table in ALLOWED_TABLES:
+        assert table in description
 
 
 @pytest.mark.parametrize(
