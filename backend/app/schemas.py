@@ -96,3 +96,37 @@ class PolicyChatResponse(BaseModel):
     sources: list[PolicySourceOut]
     role: str
     restricted: bool
+
+
+class RegisterRequest(BaseModel):
+    email: str
+    password: str
+    name: str
+
+
+class LoginRequest(BaseModel):
+    email: str
+    password: str
+
+
+class UserOut(BaseModel):
+    id: str
+    email: str
+    name: str
+    avatar_url: str | None = None
+    is_admin: bool
+    created_at: datetime
+
+    model_config = {"from_attributes": True}
+
+
+class ActivityLogOut(BaseModel):
+    id: str
+    event_type: str
+    workflow: str | None = None
+    detail: str | None = None
+    created_at: datetime
+    user_name: str | None = None
+    user_email: str | None = None
+
+    model_config = {"from_attributes": True}

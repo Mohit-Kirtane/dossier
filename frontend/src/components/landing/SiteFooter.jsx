@@ -8,17 +8,17 @@ export function SiteFooter() {
         <div className="flex items-center gap-2 text-ink-soft">
           <Logo className="h-4 w-4" />
           <span className="font-mono text-[11px] tracking-wide">
-            ENTERPRISE KNOWLEDGE COPILOT — MIT LICENSED
+            DOSSIER — MIT LICENSED
           </span>
         </div>
         <a
-          href="https://github.com/Mohit-Kirtane/enterprise-knowledge-copilot"
+          href="https://github.com/Mohit-Kirtane/dossier"
           target="_blank"
           rel="noreferrer"
           className="flex items-center gap-1.5 font-body text-sm text-ink-soft transition hover:text-paper"
         >
           <GithubMark className="h-4 w-4" />
-          github.com/Mohit-Kirtane/enterprise-knowledge-copilot
+          github.com/Mohit-Kirtane/dossier
         </a>
       </div>
     </footer>

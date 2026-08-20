@@ -4,6 +4,7 @@ import { Lock, Loader2, ShieldCheck, UploadCloud } from "lucide-react";
 import { Logo } from "./brand/Logo.jsx";
 import { GithubMark } from "./brand/GithubMark.jsx";
 import { ModuleTabs } from "./ModuleTabs.jsx";
+import { UserMenu } from "./UserMenu.jsx";
 
 const ROLE_LABELS = {
   employee: "Employee",
@@ -48,7 +49,7 @@ export function PolicySidebar({ personas, activePersonaId, onSwitchPersona, docu
         <Logo className="h-6 w-6 shrink-0" />
         <div>
           <h1 className="font-display text-[15px] font-medium leading-tight">
-            Enterprise Knowledge Copilot
+            Dossier
           </h1>
           <p className="font-mono text-[10px] tracking-wide text-ink-soft">FILE—03 · RBAC POLICY RETRIEVAL</p>
         </div>
@@ -165,7 +166,7 @@ export function PolicySidebar({ personas, activePersonaId, onSwitchPersona, docu
       </div>
 
       <a
-        href="https://github.com/Mohit-Kirtane/enterprise-knowledge-copilot"
+        href="https://github.com/Mohit-Kirtane/dossier"
         target="_blank"
         rel="noreferrer"
         className="flex items-center gap-1.5 border-t border-rule pt-4 font-mono text-[11px] tracking-wide text-ink-soft transition hover:text-paper"
@@ -173,6 +174,8 @@ export function PolicySidebar({ personas, activePersonaId, onSwitchPersona, docu
         <GithubMark className="h-3.5 w-3.5" />
         SOURCE
       </a>
+
+      <UserMenu />
     </aside>
   );
 }

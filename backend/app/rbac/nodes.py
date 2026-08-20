@@ -9,7 +9,7 @@ NO_CONTEXT_ANSWER = (
 )
 
 SYSTEM_PROMPT = (
-    "You are Enterprise Knowledge Copilot, answering internal policy questions strictly "
+    "You are Dossier, answering internal policy questions strictly "
     "using the provided policy excerpts, which have already been filtered to what the "
     "current user's role is permitted to see. Cite the source filename inline like "
     "[source: name.txt] when you use a fact from it. If the excerpts do not contain the "
