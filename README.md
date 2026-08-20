@@ -217,6 +217,13 @@ includes a [`render.yaml`](render.yaml) Blueprint for one-click deploy to
 Free-tier Render web services spin down after 15 minutes idle, so the first request
 after inactivity takes ~30-50s to cold-start — expected behavior for a free demo.
 
+Render's free tier also caps the built image size. The default `pip install torch`
+(a `sentence-transformers` dependency, used for local embeddings) bundles CUDA/GPU
+libraries that are never used here and push the image well over that limit; the
+Dockerfile installs the CPU-only PyTorch wheel instead (`--index-url
+https://download.pytorch.org/whl/cpu`) and builds with a discarded compiler stage
+so `build-essential` never ships in the final image.
+
 See `.env.example` for the full list of configuration options if deploying elsewhere.
 
 > **Note on the live demo's LLM quota:** `gemini-3.6-flash`'s free tier caps out at a
