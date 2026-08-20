@@ -90,18 +90,20 @@ export default function ActivityPage() {
 
   return (
     <div className="min-h-screen bg-ink">
-      <header className="flex items-center justify-between border-b border-rule px-6 py-4 sm:px-10">
+      <header className="flex flex-col gap-4 border-b border-rule px-6 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-10">
         <Link to="/" className="flex items-center gap-2.5 text-paper transition hover:text-ochre">
           <Logo className="h-6 w-6" />
           <span className="font-mono text-[12px] font-medium tracking-[0.12em]">
             DOSSIER
           </span>
         </Link>
-        <ModuleTabs />
+        <div className="overflow-x-auto">
+          <ModuleTabs />
+        </div>
       </header>
 
       <main className="mx-auto w-full max-w-5xl px-6 py-10 sm:px-10">
-        <div className="mb-8 flex items-end justify-between gap-6 border-b border-rule pb-5">
+        <div className="mb-8 flex flex-col gap-4 border-b border-rule pb-5 sm:flex-row sm:items-end sm:justify-between sm:gap-6">
           <div>
             <p className="font-mono text-[11px] font-medium tracking-[0.18em] text-ochre">
               THE LEDGER

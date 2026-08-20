@@ -1,13 +1,14 @@
 import { useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import { FileText, Loader2, UploadCloud } from "lucide-react";
+import { FileText, Loader2, UploadCloud, X } from "lucide-react";
 import { Logo } from "./brand/Logo.jsx";
 import { GithubMark } from "./brand/GithubMark.jsx";
 import { ModuleTabs } from "./ModuleTabs.jsx";
+import { SidebarShell } from "./SidebarShell.jsx";
 import { UserMenu } from "./UserMenu.jsx";
 import { checkUploadSize, MAX_UPLOAD_SIZE_MB } from "../lib/uploadLimits.js";
 
-export function Sidebar({ documents, onUpload, selectedDocumentId, onSelectDocument }) {
+export function Sidebar({ documents, onUpload, selectedDocumentId, onSelectDocument, open, onClose }) {
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState(null);
   const inputRef = useRef(null);
@@ -34,16 +35,28 @@ export function Sidebar({ documents, onUpload, selectedDocumentId, onSelectDocum
   }
 
   return (
-    <aside className="flex h-full w-80 shrink-0 flex-col gap-5 border-r border-rule bg-ink-raised/60 p-5">
-      <Link to="/" className="flex items-center gap-2.5 text-paper transition hover:text-ochre">
-        <Logo className="h-6 w-6 shrink-0" />
-        <div>
-          <h1 className="font-display text-[15px] font-medium leading-tight">
-            Dossier
-          </h1>
-          <p className="font-mono text-[10px] tracking-wide text-ink-soft">FILE—01 · DOCUMENT INTELLIGENCE</p>
-        </div>
-      </Link>
+    <SidebarShell open={open} onClose={onClose}>
+      <div className="flex items-center justify-between gap-2">
+        <Link to="/" className="flex min-w-0 items-center gap-2.5 text-paper transition hover:text-ochre">
+          <Logo className="h-6 w-6 shrink-0" />
+          <div className="min-w-0">
+            <h1 className="font-display text-[15px] font-medium leading-tight">
+              Dossier
+            </h1>
+            <p className="truncate font-mono text-[10px] tracking-wide text-ink-soft">
+              FILE—01 · DOCUMENT INTELLIGENCE
+            </p>
+          </div>
+        </Link>
+        <button
+          type="button"
+          onClick={onClose}
+          aria-label="Close sidebar"
+          className="shrink-0 text-ink-soft transition hover:text-paper lg:hidden"
+        >
+          <X className="h-5 w-5" />
+        </button>
+      </div>
 
       <ModuleTabs />
 
@@ -146,6 +159,6 @@ export function Sidebar({ documents, onUpload, selectedDocumentId, onSelectDocum
       </a>
 
       <UserMenu />
-    </aside>
+    </SidebarShell>
   );
 }
