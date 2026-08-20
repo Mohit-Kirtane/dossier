@@ -68,3 +68,58 @@ body {
     animation: none;
   }
 }
+
+@keyframes scan-sweep {
+  0% {
+    background-position: -120% 0;
+  }
+  100% {
+    background-position: 220% 0;
+  }
+}
+
+.scan-bar {
+  background-image: linear-gradient(
+    90deg,
+    transparent,
+    var(--color-ochre) 45%,
+    var(--color-ochre) 55%,
+    transparent
+  );
+  background-size: 60% 100%;
+  background-repeat: no-repeat;
+  animation: scan-sweep 3.2s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scan-bar {
+    animation: none;
+    background-image: none;
+    background-color: var(--color-ochre-deep);
+    opacity: 0.4;
+  }
+}
+
+@keyframes caret-blink {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
+}
+
+.typing-caret {
+  display: inline-block;
+  width: 2px;
+  margin-left: 1px;
+  background: currentColor;
+  animation: caret-blink 0.85s step-end infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .typing-caret {
+    animation: none;
+  }
+}

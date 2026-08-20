@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { ArrowRight, Database, FileText, Receipt, ShieldCheck } from "lucide-react";
+import { LiveDot } from "../LiveDot.jsx";
 
 const WORKFLOWS = [
   {
@@ -50,12 +51,13 @@ function WorkflowCard({ workflow }) {
       <div className="flex items-start justify-between">
         <span className="font-mono text-[11px] tracking-[0.1em] text-ink-soft">{workflow.code}</span>
         <span
-          className={`rounded-full px-2 py-0.5 font-mono text-[10px] font-medium tracking-wide ${
+          className={`flex items-center gap-1.5 rounded-full px-2 py-0.5 font-mono text-[10px] font-medium tracking-wide ${
             isLive
               ? "border border-ochre-deep/40 bg-ochre/15 text-ochre"
               : "border border-rule text-ink-soft"
           }`}
         >
+          {isLive && <LiveDot />}
           {workflow.status}
         </span>
       </div>

@@ -3,11 +3,13 @@ from functools import lru_cache
 from langgraph.graph import END, StateGraph
 
 from app.rbac.nodes import (
+    check_smalltalk_node,
     generate_node,
     no_context_node,
     restricted_node,
     retrieve_node,
     route_after_retrieve,
+    route_after_smalltalk_check,
 )
 from app.rbac.state import PolicyState
 
@@ -15,6 +17,7 @@ from app.rbac.state import PolicyState
 @lru_cache
 def get_workflow():
     graph = StateGraph(PolicyState)
+    graph.add_node("check_smalltalk", check_smalltalk_node)
     graph.add_node("retrieve", retrieve_node)
     graph.add_node("generate", generate_node)
     # Named "access_restricted" (not "restricted") - a node name can't collide
@@ -22,7 +25,10 @@ def get_workflow():
     graph.add_node("access_restricted", restricted_node)
     graph.add_node("no_context", no_context_node)
 
-    graph.set_entry_point("retrieve")
+    graph.set_entry_point("check_smalltalk")
+    graph.add_conditional_edges(
+        "check_smalltalk", route_after_smalltalk_check, {"smalltalk": END, "retrieve": "retrieve"}
+    )
     graph.add_conditional_edges(
         "retrieve",
         route_after_retrieve,

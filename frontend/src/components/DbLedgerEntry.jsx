@@ -1,5 +1,7 @@
-import { Loader2 } from "lucide-react";
+import { ReasoningTrace } from "./ReasoningTrace.jsx";
+import { useTypewriter } from "../lib/useTypewriter.js";
 
+const STEPS = ["WRITING SQL", "VALIDATING QUERY", "RUNNING QUERY", "SUMMARIZING"];
 const PREVIEW_ROWS = 8;
 
 function ResultsTable({ columns, rows }) {
@@ -41,6 +43,8 @@ function ResultsTable({ columns, rows }) {
 }
 
 export function DbLedgerEntry({ message }) {
+  const { shown, done } = useTypewriter(message.pending ? "" : message.content);
+
   if (message.role === "user") {
     return (
       <div className="ledger-row flex items-baseline justify-end gap-2 text-right">
@@ -84,21 +88,21 @@ export function DbLedgerEntry({ message }) {
       </div>
 
       {message.pending ? (
-        <span className="mt-3 flex items-center gap-2 font-body text-sm text-ink/60">
-          <Loader2 className="h-4 w-4 animate-spin text-ochre-deep" />
-          Querying…
-        </span>
+        <div className="mt-3 text-ink/60">
+          <ReasoningTrace steps={STEPS} />
+        </div>
       ) : (
         <>
           <p className="mt-3 font-body text-sm leading-relaxed whitespace-pre-wrap text-ink">
-            {message.content}
+            {shown}
+            {!done && <span className="typing-caret h-4 align-middle" />}
           </p>
-          {message.sql && (
+          {done && message.sql && (
             <pre className="mt-3 overflow-x-auto rounded-md border border-ink/10 bg-ink/[0.04] px-3 py-2 font-mono text-[11px] leading-relaxed text-ink/70">
               {message.sql}
             </pre>
           )}
-          {hasRows && <ResultsTable columns={message.columns} rows={message.rows} />}
+          {done && hasRows && <ResultsTable columns={message.columns} rows={message.rows} />}
         </>
       )}
     </div>

@@ -1,6 +1,12 @@
-import { Loader2, Lock } from "lucide-react";
+import { Lock } from "lucide-react";
+import { ReasoningTrace } from "./ReasoningTrace.jsx";
+import { useTypewriter } from "../lib/useTypewriter.js";
+
+const STEPS = ["SEARCHING POLICIES", "CHECKING ACCESS", "GENERATING ANSWER"];
 
 export function PolicyLedgerEntry({ message }) {
+  const { shown, done } = useTypewriter(message.pending ? "" : message.content);
+
   if (message.role === "user") {
     return (
       <div className="ledger-row flex items-baseline justify-end gap-2 text-right">
@@ -49,16 +55,16 @@ export function PolicyLedgerEntry({ message }) {
       </div>
 
       {message.pending ? (
-        <span className="mt-3 flex items-center gap-2 font-body text-sm text-ink/60">
-          <Loader2 className="h-4 w-4 animate-spin text-ochre-deep" />
-          Checking access…
-        </span>
+        <div className="mt-3 text-ink/60">
+          <ReasoningTrace steps={STEPS} />
+        </div>
       ) : (
         <>
           <p className="mt-3 font-body text-sm leading-relaxed whitespace-pre-wrap text-ink">
-            {message.content}
+            {shown}
+            {!done && <span className="typing-caret h-4 align-middle" />}
           </p>
-          {uniqueSources.length > 0 && (
+          {done && uniqueSources.length > 0 && (
             <p className="mt-3 border-t border-ink/10 pt-2 font-mono text-[11px] tracking-wide text-ink/50">
               [source: {uniqueSources.join(", ")}]
             </p>
