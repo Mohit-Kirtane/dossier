@@ -10,5 +10,6 @@ class SourceChunk(TypedDict):
 class GraphState(TypedDict):
     question: str
     chat_history: list[dict]
+    document_id: str | None
     sources: list[SourceChunk]
     answer: str

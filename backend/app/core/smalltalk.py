@@ -8,7 +8,8 @@ _GREETING_RE = re.compile(
 
 _META_RE = re.compile(
     r"\b(what can you do|what do you do|who are you|what are you|"
-    r"how does this work|how do you work|what is this( (app|tool|thing))?|"
+    r"how does this work|how do you work|"
+    r"what is this(?!\s+(document|pdf|file|upload))( (app|tool|thing))?|"
     r"help me|can you help|how (can|do) (i|you) use)\b",
     re.IGNORECASE,
 )
