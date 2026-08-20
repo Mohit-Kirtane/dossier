@@ -7,16 +7,19 @@ one FastAPI service:
   in cited passages
 - **Database chat** — ask questions in plain language over a structured dataset; the
   assistant writes, validates, and runs a read-only SQL query and explains the result
+- **RBAC-aware policy retrieval** — ask questions over internal policy documents;
+  retrieval is filtered to what the current role is permitted to see, enforced before
+  any answer is generated
 
-RBAC-aware policy retrieval and invoice intelligence are next on the roadmap below.
+Invoice intelligence is next on the roadmap below.
 
 ## Stack
 
 - **React + JavaScript + Tailwind** (Vite) — chat UI, one workspace per workflow
 - **FastAPI** — HTTP API, and serves the built frontend as static assets in production
 - **LangGraph** — each workflow is an explicit state graph (retrieve/generate for
-  documents; generate → validate → execute → summarize, with self-correcting retries,
-  for database chat)
+  documents and policies; generate → validate → execute → summarize, with
+  self-correcting retries, for database chat)
 - **LangChain** — document loaders, text splitting, vector store integration
 - **FAISS** — local vector index, persisted to disk
 - **Sentence-Transformers** (`all-MiniLM-L6-v2`) — local embeddings, no API quota used
@@ -64,6 +67,29 @@ a write ("delete...", "update...") is refused before any SQL is generated, and t
 summarizer is explicitly instructed never to claim data was changed (it only describes
 read-only results) — both guard against the model hallucinating that a mutation
 succeeded when it was actually blocked.
+
+### RBAC-aware policy retrieval
+
+```
+Question + role → LangGraph:
+    retrieve (FAISS similarity search over ALL policy chunks, ignoring role)
+        -> filter to chunks the role is actually allowed to see
+        -> nothing relevant at all: "not found" (0 LLM calls)
+        -> relevant content exists, but none of it is role-accessible: refuse
+           with an explicit access-restricted message (0 LLM calls)
+        -> role-accessible content exists: generate (Gemini, grounded, cites sources)
+```
+
+There's no real login system - a "switch persona" control simulates being a
+different named employee (each with one of four roles: employee, manager, hr,
+executive), so enforcement is visible and testable without building auth. The
+two-pass retrieval (search once, ignoring role, to know whether anything relevant
+exists at all; then filter by role) is what makes the "restricted" response
+honest: it only fires when there genuinely is an answer the current role isn't
+allowed to see, not just whenever nothing matches. Uploaded and seeded policy
+documents both carry an `allowed_roles` list in their chunk metadata, checked at
+retrieval time — a locked-out role never gets that content into its LLM prompt in
+the first place.
 
 ## Running locally
 
@@ -137,18 +163,19 @@ after inactivity takes ~30-50s to cold-start — expected behavior for a free de
 See `.env.example` for the full list of configuration options if deploying elsewhere.
 
 > **Note on the live demo's LLM quota:** `gemini-3.6-flash`'s free tier caps out at a
-> small number of requests per day, shared across both workflows. If the demo responds
-> with "the AI provider's request quota is exhausted," that's this limit — the app
-> degrades gracefully rather than erroring out, and normal use resumes once the quota
-> resets. Point `LLM_API_KEY`/`LLM_MODEL` at a higher-quota provider for production use.
+> small number of requests per day, shared across all three workflows. If the demo
+> responds with "the AI provider's request quota is exhausted," that's this limit —
+> the app degrades gracefully rather than erroring out. Set `LLM_API_KEY_FALLBACK` to
+> a second API key (e.g. a separate free-tier project) to automatically retry there
+> when the primary key errors out, via LangChain's `with_fallbacks`; both are optional
+> and either can point at any OpenAI-compatible provider.
 
 ## Roadmap
 
-This repo currently implements **document intelligence** and **database chat**.
-Planned additions, each as an independent LangGraph workflow behind the same
-FastAPI service:
+This repo currently implements **document intelligence**, **database chat**, and
+**RBAC-aware policy retrieval**. Planned next, as an independent LangGraph workflow
+behind the same FastAPI service:
 
-- **RBAC-aware policy retrieval** — permission-scoped retrieval over policy documents by role
 - **Invoice intelligence** — structured extraction and Q&A over invoice documents
 
 ## License

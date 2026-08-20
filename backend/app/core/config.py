@@ -10,6 +10,7 @@ class Settings(BaseSettings):
 
     # LLM (Google Gemini, via its OpenAI-compatible endpoint)
     llm_api_key: str = ""
+    llm_api_key_fallback: str = ""
     llm_base_url: str = "https://generativelanguage.googleapis.com/v1beta/openai/"
     llm_model: str = "gemini-3.6-flash"
 
@@ -20,6 +21,8 @@ class Settings(BaseSettings):
     database_url: str = "sqlite:///./data/app.db"
     faiss_index_dir: str = "./data/faiss_index"
     upload_dir: str = "./data/uploads"
+    policy_faiss_index_dir: str = "./data/policy_faiss_index"
+    policy_upload_dir: str = "./data/policy_uploads"
 
     # Retrieval / chunking
     chunk_size: int = 1000

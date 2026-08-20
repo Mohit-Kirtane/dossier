@@ -3,6 +3,7 @@ import { Link, useLocation } from "react-router-dom";
 const MODULES = [
   { path: "/app", label: "Document intel" },
   { path: "/app/database-chat", label: "Database chat" },
+  { path: "/app/policy-chat", label: "Policy retrieval" },
 ];
 
 export function ModuleTabs() {

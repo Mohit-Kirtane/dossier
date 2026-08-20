@@ -20,7 +20,8 @@ const WORKFLOWS = [
   },
   {
     code: "FILE—03",
-    status: "QUEUED",
+    status: "LIVE",
+    path: "/app/policy-chat",
     title: "RBAC policy retrieval",
     description: "Retrieval scoped to what a role is permitted to see, enforced at query time.",
     icon: ShieldCheck,

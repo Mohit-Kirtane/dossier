@@ -6,11 +6,12 @@ from fastapi.staticfiles import StaticFiles
 from starlette.exceptions import HTTPException as StarletteHTTPException
 from starlette.responses import Response
 
-from app.api.routes import chat, database_chat, documents, health
+from app.api.routes import chat, database_chat, documents, health, policy_chat
 from app.core.config import get_settings
-from app.db import demo_models  # noqa: F401 - registers demo tables on Base.metadata
+from app.db import demo_models, policy_models  # noqa: F401 - registers tables on Base.metadata
 from app.db.session import SessionLocal, init_db
 from app.dbchat.seed import seed_demo_data
+from app.rbac.seed import seed_policy_documents
 
 
 class SPAStaticFiles(StaticFiles):
@@ -30,6 +31,7 @@ async def lifespan(app: FastAPI):
     init_db()
     with SessionLocal() as session:
         seed_demo_data(session)
+        seed_policy_documents(session)
     yield
 
 
@@ -47,5 +49,6 @@ app.include_router(health.router, prefix="/api")
 app.include_router(documents.router, prefix="/api")
 app.include_router(chat.router, prefix="/api")
 app.include_router(database_chat.router, prefix="/api")
+app.include_router(policy_chat.router, prefix="/api")
 
 app.mount("/", SPAStaticFiles(directory="app/static", html=True, check_dir=False), name="static")
