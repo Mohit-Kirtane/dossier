@@ -14,6 +14,7 @@ export default function PolicyChatPage() {
   const [documents, setDocuments] = useState([]);
   const [messages, setMessages] = useState([]);
   const [sending, setSending] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
     getPersonas().then((list) => {
@@ -34,6 +35,7 @@ export default function PolicyChatPage() {
   function handleSwitchPersona(personaId) {
     setActivePersonaId(personaId);
     setMessages([]);
+    setSidebarOpen(false);
   }
 
   async function handleUpload(file, allowedRoles) {
@@ -97,6 +99,8 @@ export default function PolicyChatPage() {
         onSwitchPersona={handleSwitchPersona}
         documents={documents}
         onUpload={handleUpload}
+        open={sidebarOpen}
+        onClose={() => setSidebarOpen(false)}
       />
       <PolicyChatPanel
         activePersona={activePersona}
@@ -104,6 +108,7 @@ export default function PolicyChatPage() {
         onSend={handleSend}
         onReset={handleReset}
         disabled={sending}
+        onOpenSidebar={() => setSidebarOpen(true)}
       />
     </div>
   );

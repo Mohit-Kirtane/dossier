@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from "react";
-import { RotateCcw, Send } from "lucide-react";
+import { Menu, RotateCcw, Send } from "lucide-react";
 import { LedgerEntry } from "./LedgerEntry.jsx";
 
-export function ChatPanel({ messages, onSend, onReset, disabled, scopedDocument }) {
+export function ChatPanel({ messages, onSend, onReset, disabled, scopedDocument, onOpenSidebar }) {
   const [input, setInput] = useState("");
   const bottomRef = useRef(null);
 
@@ -20,30 +20,40 @@ export function ChatPanel({ messages, onSend, onReset, disabled, scopedDocument 
 
   return (
     <main className="flex h-full flex-1 flex-col">
-      <div className="flex items-center justify-between border-b border-rule px-8 py-4">
-        <p className="font-mono text-[11px] tracking-[0.18em] text-ink-soft">
-          WORKSPACE <span className="text-ink-soft/40">/</span> DOCUMENT INTELLIGENCE
-          {scopedDocument && (
-            <>
-              {" "}
-              <span className="text-ink-soft/40">/</span>{" "}
-              <span className="text-ochre">SCOPED TO {scopedDocument.toUpperCase()}</span>
-            </>
-          )}
-        </p>
+      <div className="flex items-center justify-between gap-3 border-b border-rule px-4 py-4 sm:px-6 lg:px-8">
+        <div className="flex min-w-0 items-center gap-3">
+          <button
+            type="button"
+            onClick={onOpenSidebar}
+            aria-label="Open sidebar"
+            className="shrink-0 text-ink-soft transition hover:text-paper lg:hidden"
+          >
+            <Menu className="h-5 w-5" />
+          </button>
+          <p className="truncate font-mono text-[11px] tracking-[0.18em] text-ink-soft">
+            WORKSPACE <span className="text-ink-soft/40">/</span> DOCUMENT INTELLIGENCE
+            {scopedDocument && (
+              <>
+                {" "}
+                <span className="text-ink-soft/40">/</span>{" "}
+                <span className="text-ochre">SCOPED TO {scopedDocument.toUpperCase()}</span>
+              </>
+            )}
+          </p>
+        </div>
         {messages.length > 0 && (
           <button
             type="button"
             onClick={onReset}
-            className="flex items-center gap-1.5 font-mono text-[11px] tracking-wide text-ink-soft transition hover:text-ochre"
+            className="flex shrink-0 items-center gap-1.5 font-mono text-[11px] tracking-wide text-ink-soft transition hover:text-ochre"
           >
             <RotateCcw className="h-3.5 w-3.5" />
-            NEW SESSION
+            <span className="hidden sm:inline">NEW SESSION</span>
           </button>
         )}
       </div>
 
-      <div className="flex-1 overflow-y-auto px-8 py-8">
+      <div className="flex-1 overflow-y-auto px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
         {messages.length === 0 ? (
           <div className="mx-auto mt-16 max-w-sm rounded-lg border border-dashed border-rule px-6 py-10 text-center">
             <p className="font-mono text-[11px] font-medium tracking-[0.18em] text-ink-soft">
@@ -67,7 +77,7 @@ export function ChatPanel({ messages, onSend, onReset, disabled, scopedDocument 
 
       <form
         onSubmit={handleSubmit}
-        className="mx-auto flex w-full max-w-2xl items-center gap-3 border-t border-rule px-8 py-5"
+        className="mx-auto flex w-full max-w-2xl items-center gap-3 border-t border-rule px-4 py-4 sm:px-6 sm:py-5 lg:px-8"
       >
         <input
           value={input}

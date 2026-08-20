@@ -9,6 +9,7 @@ export default function WorkspacePage() {
   const [sessionId, setSessionId] = useState(null);
   const [sending, setSending] = useState(false);
   const [selectedDocumentId, setSelectedDocumentId] = useState(null);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const refreshDocuments = useCallback(async () => {
     setDocuments(await listDocuments());
@@ -32,6 +33,7 @@ export default function WorkspacePage() {
     setSelectedDocumentId(documentId);
     setMessages([]);
     setSessionId(null);
+    setSidebarOpen(false);
   }
 
   async function handleSend(question) {
@@ -85,6 +87,8 @@ export default function WorkspacePage() {
         onUpload={handleUpload}
         selectedDocumentId={selectedDocumentId}
         onSelectDocument={handleSelectDocument}
+        open={sidebarOpen}
+        onClose={() => setSidebarOpen(false)}
       />
       <ChatPanel
         messages={messages}
@@ -92,6 +96,7 @@ export default function WorkspacePage() {
         onReset={handleReset}
         disabled={sending}
         scopedDocument={scopedDocument?.filename}
+        onOpenSidebar={() => setSidebarOpen(true)}
       />
     </div>
   );

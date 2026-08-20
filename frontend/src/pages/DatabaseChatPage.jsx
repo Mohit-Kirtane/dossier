@@ -7,6 +7,7 @@ export default function DatabaseChatPage() {
   const [tables, setTables] = useState([]);
   const [messages, setMessages] = useState([]);
   const [sending, setSending] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
     getDbSchema()
@@ -63,8 +64,14 @@ export default function DatabaseChatPage() {
 
   return (
     <div className="flex h-screen w-screen overflow-hidden bg-ink">
-      <DbSchemaSidebar tables={tables} />
-      <DbChatPanel messages={messages} onSend={handleSend} onReset={handleReset} disabled={sending} />
+      <DbSchemaSidebar tables={tables} open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+      <DbChatPanel
+        messages={messages}
+        onSend={handleSend}
+        onReset={handleReset}
+        disabled={sending}
+        onOpenSidebar={() => setSidebarOpen(true)}
+      />
     </div>
   );
 }
