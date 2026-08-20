@@ -1,5 +1,6 @@
 from app.core.config import get_settings
 from app.core.llm import get_llm
+from app.core.smalltalk import is_smalltalk
 from app.core.vectorstore import similarity_search_with_score
 from app.graph.state import GraphState
 
@@ -7,6 +8,20 @@ NO_CONTEXT_ANSWER = (
     "I couldn't find anything relevant to that in the uploaded documents. "
     "Try rephrasing, or upload a document that covers this topic."
 )
+
+SMALLTALK_ANSWER = (
+    "Hi! I'm Dossier's document assistant. Upload a PDF, DOCX, or text file in the "
+    "sidebar, then ask me questions about it — I'll answer using only what's in your "
+    "documents and cite the source."
+)
+
+
+def check_smalltalk_node(state: GraphState) -> GraphState:
+    return {**state, "answer": SMALLTALK_ANSWER if is_smalltalk(state["question"]) else ""}
+
+
+def route_after_smalltalk_check(state: GraphState) -> str:
+    return "smalltalk" if state["answer"] else "retrieve"
 
 SYSTEM_PROMPT = (
     "You are Dossier, an assistant that answers questions strictly using "

@@ -3,12 +3,27 @@ import re
 from sqlalchemy import text
 
 from app.core.llm import get_llm
+from app.core.smalltalk import is_smalltalk
 from app.db.session import engine
 from app.dbchat.schema_info import get_schema_description
 from app.dbchat.sql_guard import MAX_ROWS, SqlValidationError, validate_and_prepare_sql
 from app.dbchat.state import DbChatState
 
 MAX_RETRIES = 1
+
+SMALLTALK_ANSWER = (
+    "Hi! I'm Dossier's database assistant. Ask me questions in plain English about "
+    "departments, employees, customers, products, contracts, invoices, or support "
+    "tickets — I'll write and run a safe, read-only SQL query and explain the result."
+)
+
+
+def check_smalltalk_node(state: DbChatState) -> DbChatState:
+    return {**state, "answer": SMALLTALK_ANSWER if is_smalltalk(state["question"]) else ""}
+
+
+def route_after_smalltalk_check(state: DbChatState) -> str:
+    return "smalltalk" if state["answer"] else "check_intent"
 
 _WRITE_INTENT_RE = re.compile(
     r"\b(delete|remove|drop|truncate|update|insert|add\s+a\s+\w+|create\s+a\s+\w+|"

@@ -1,3 +1,5 @@
+import { LiveDot } from "../LiveDot.jsx";
+
 const INGEST = [
   { label: "UPLOAD", value: "sample.txt" },
   { label: "CHUNK", value: "1 segment · 1,000 chars" },
@@ -34,10 +36,13 @@ function LedgerGroup({ title, rows, baseDelay, animate }) {
 
 export function LedgerTrace({ animate = false }) {
   return (
-    <div className="w-full max-w-md rounded-lg border border-ink/10 bg-paper p-6 shadow-[0_30px_60px_-20px_rgba(0,0,0,0.5)]">
+    <div className="relative w-full max-w-md overflow-hidden rounded-lg border border-ink/10 bg-paper p-6 shadow-[0_30px_60px_-20px_rgba(0,0,0,0.5)]">
+      <div className="scan-bar absolute inset-x-0 top-0 h-[2px]" />
+
       <div className="mb-4 flex items-center justify-between">
         <p className="font-mono text-[11px] font-medium tracking-[0.18em] text-ink/50">LEDGER TRACE</p>
-        <span className="rounded-full border border-ochre-deep/40 bg-ochre/15 px-2 py-0.5 font-mono text-[10px] font-medium tracking-wide text-ochre-deep">
+        <span className="flex items-center gap-1.5 rounded-full border border-ochre-deep/40 bg-ochre/15 px-2 py-0.5 font-mono text-[10px] font-medium tracking-wide text-ochre-deep">
+          <LiveDot />
           LIVE
         </span>
       </div>
