@@ -11,7 +11,13 @@ from app.core.errors import friendly_llm_error
 from app.db.auth_models import User
 from app.db.policy_models import PolicyDocument
 from app.db.session import get_db
-from app.ingestion.loaders import UnsupportedFileType, chunk_documents, load_file
+from app.ingestion.loaders import (
+    FileTooLarge,
+    UnsupportedFileType,
+    chunk_documents,
+    ensure_within_upload_size_limit,
+    load_file,
+)
 from app.rbac.personas import PERSONAS, ROLES, role_for_persona
 from app.rbac.vectorstore import add_policy_documents
 from app.rbac.workflow import run_workflow
@@ -65,11 +71,16 @@ async def upload_policy_document(
     if not roles:
         raise HTTPException(status_code=400, detail="Select at least one valid role")
 
+    contents = await file.read()
+    try:
+        ensure_within_upload_size_limit(contents)
+    except FileTooLarge as exc:
+        raise HTTPException(status_code=413, detail=str(exc)) from exc
+
     os.makedirs(settings.policy_upload_dir, exist_ok=True)
     document_id = str(uuid.uuid4())
     stored_path = os.path.join(settings.policy_upload_dir, f"{document_id}{ext}")
 
-    contents = await file.read()
     with open(stored_path, "wb") as f:
         f.write(contents)
 

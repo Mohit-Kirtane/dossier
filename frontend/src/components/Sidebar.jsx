@@ -5,6 +5,7 @@ import { Logo } from "./brand/Logo.jsx";
 import { GithubMark } from "./brand/GithubMark.jsx";
 import { ModuleTabs } from "./ModuleTabs.jsx";
 import { UserMenu } from "./UserMenu.jsx";
+import { checkUploadSize, MAX_UPLOAD_SIZE_MB } from "../lib/uploadLimits.js";
 
 export function Sidebar({ documents, onUpload }) {
   const [uploading, setUploading] = useState(false);
@@ -14,6 +15,13 @@ export function Sidebar({ documents, onUpload }) {
   async function handleFile(file) {
     if (!file) return;
     setError(null);
+    try {
+      checkUploadSize(file);
+    } catch (err) {
+      setError(err.message);
+      if (inputRef.current) inputRef.current.value = "";
+      return;
+    }
     setUploading(true);
     try {
       await onUpload(file);
@@ -49,7 +57,7 @@ export function Sidebar({ documents, onUpload }) {
         ) : (
           <UploadCloud className="h-5 w-5" />
         )}
-        <span>{uploading ? "Uploading…" : "Click to upload a PDF, DOCX, or TXT"}</span>
+        <span>{uploading ? "Uploading…" : `Click to upload a PDF, DOCX, or TXT (max ${MAX_UPLOAD_SIZE_MB} MB)`}</span>
         <input
           ref={inputRef}
           type="file"

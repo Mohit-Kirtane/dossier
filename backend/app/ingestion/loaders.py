@@ -18,6 +18,17 @@ class UnsupportedFileType(ValueError):
     pass
 
 
+class FileTooLarge(ValueError):
+    pass
+
+
+def ensure_within_upload_size_limit(contents: bytes) -> None:
+    settings = get_settings()
+    max_bytes = settings.max_upload_size_mb * 1024 * 1024
+    if len(contents) > max_bytes:
+        raise FileTooLarge(f"File is too large. Maximum size is {settings.max_upload_size_mb} MB.")
+
+
 def load_file(path: str) -> list[Document]:
     ext = os.path.splitext(path)[1].lower()
     loader_cls = _EXTENSION_LOADERS.get(ext)
