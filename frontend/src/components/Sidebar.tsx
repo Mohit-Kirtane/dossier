@@ -72,7 +72,9 @@ export function Sidebar({ documents, onUpload }: SidebarProps) {
             <FileText className="mt-0.5 h-4 w-4 shrink-0 text-slate-500" />
             <div className="min-w-0">
               <p className="truncate text-sm font-medium text-slate-200">{doc.filename}</p>
-              <p className="text-xs text-slate-500">{doc.chunk_count} chunks</p>
+              <p className="text-xs text-slate-500">
+                {doc.chunk_count} {doc.chunk_count === 1 ? "chunk" : "chunks"}
+              </p>
             </div>
           </div>
         ))}
