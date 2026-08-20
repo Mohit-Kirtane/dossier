@@ -7,7 +7,8 @@ retrieval, and invoice intelligence are on the roadmap below).
 
 ## Stack
 
-- **FastAPI** — HTTP API + a small built-in chat UI (static HTML/JS, no build step)
+- **React + TypeScript + Tailwind** (Vite) — chat UI with document upload sidebar
+- **FastAPI** — HTTP API, and serves the built frontend as static assets in production
 - **LangGraph** — orchestrates retrieval → relevance filtering → generation as an explicit graph
 - **LangChain** — document loaders, text splitting, vector store integration
 - **FAISS** — local vector index, persisted to disk
@@ -33,6 +34,8 @@ rate-limited free-tier API key.
 
 ## Running locally
 
+Backend:
+
 ```bash
 conda create -n ekc-env python=3.11 -y
 conda activate ekc-env
@@ -42,13 +45,35 @@ pip install -r requirements.txt
 cp .env.example .env
 # edit .env and set LLM_API_KEY (https://aistudio.google.com/apikey)
 
-uvicorn app.main:app --reload
+uvicorn app.main:app --reload --port 8000
 ```
 
-Open http://localhost:8000 — upload a document, then ask a question about it.
+Frontend (separate terminal) — dev server proxies `/api` to the backend on port 8000:
 
-By default this uses local SQLite (`./data/app.db`) and an on-disk FAISS index
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+Open the Vite dev URL it prints (typically http://localhost:5173) — upload a document,
+then ask a question about it.
+
+By default the backend uses local SQLite (`./data/app.db`) and an on-disk FAISS index
 (`./data/faiss_index`) — no external services required.
+
+### Production-style build (single server)
+
+`npm run build` compiles the frontend straight into `backend/app/static/`, which
+FastAPI serves at `/`. This is what the Docker image does automatically; to do it
+manually:
+
+```bash
+cd frontend && npm install && npm run build
+cd ../backend && uvicorn app.main:app --port 8000
+```
+
+Then open http://localhost:8000.
 
 ### With Postgres (docker-compose)
 
@@ -64,8 +89,9 @@ includes a [`render.yaml`](render.yaml) Blueprint for one-click deploy to
 
 1. Create a free Postgres database on [Neon](https://neon.tech) and copy its connection string.
 2. On Render: **New → Blueprint**, point it at this GitHub repo. It reads `render.yaml`
-   and provisions a free web service running `backend/Dockerfile`, with a persistent
-   1GB disk mounted at `/app/data` for the FAISS index and uploads.
+   and provisions a free web service running the root `Dockerfile` (multi-stage: builds
+   the React frontend, then bakes it into the FastAPI image), with a persistent 1GB
+   disk mounted at `/app/data` for the FAISS index and uploads.
 3. When prompted for the two `sync: false` env vars, set:
    - `LLM_API_KEY` — your [Gemini API key](https://aistudio.google.com/apikey)
    - `DATABASE_URL` — the Neon connection string, with the driver scheme changed to
