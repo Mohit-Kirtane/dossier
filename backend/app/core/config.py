@@ -42,6 +42,10 @@ class Settings(BaseSettings):
     google_client_secret: str = ""
     google_redirect_uri: str = "http://localhost:8000/api/auth/google/callback"
 
+    # Tracewell (observability) - optional, no-op when unset
+    tracewell_api_key: str = ""
+    tracewell_base_url: str = "https://api.tracewell.dev"
+
 
 @lru_cache
 def get_settings() -> Settings:
